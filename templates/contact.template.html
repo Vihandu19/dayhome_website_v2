@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contact - Happy Times Dayhome</title>
+  <link rel="stylesheet" href="/assets/css/tabler-icons.min.css">
+  <link rel="stylesheet" href="/assets/css/styles.css">
+  <style>
+    .content-plant svg {
+      height: 200px;
+      width: auto;
+      display: block;
+    }
+    .page-header {
+      padding-bottom: 0px !important;
+    }
+    .page-header .content-plant {
+      margin-bottom: 0 !important;
+    }
+  </style>
+</head>
+<body>
+
+<div class="site">
+  {{NAV}}
+
+  <section class="page-header">
+    <div class="page-header-inner" style="display: flex; flex-direction: row; align-items: flex-start; gap: 2rem; width: 100%;">
+      <div class="page-header-text" style="flex: 0 1 auto;">
+        <p class="page-eyebrow">Contact</p>
+        <h1 class="page-headline">Submit an inquiry.</h1>
+        <p class="page-sub">Fill out the form below and I'll review your inquiry against current availability. If it looks like a good fit, I'll be in touch.</p>
+      </div>
+      <div class="content-plant" style="flex: 1; display: flex; justify-content: center; align-items: flex-start;">{{XLARGE_PLANT}}</div>
+    </div>
+  </section>
+
+  <div class="contact-layout">
+
+    <section class="form-section fade-in-section" id="form-wrapper" aria-label="Inquiry form">
+
+      <div id="success-state" class="success-overlay" aria-live="polite">
+        <div class="success-icon"><i class="ti ti-check" aria-hidden="true"></i></div>
+        <h2 class="success-heading">Inquiry received.</h2>
+        <p class="success-sub">I'll review your details and be in touch if your schedule aligns with our availability.</p>
+      </div>
+
+      <form id="inquiry-form" novalidate>
+
+        <p class="form-section-label">Parent or guardian</p>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="parent-name">Full name <span class="req" aria-hidden="true">*</span></label>
+            <input type="text" id="parent-name" name="parent_name" autocomplete="name" required placeholder="Jane Smith" aria-describedby="parent-name-error">
+            <p id="parent-name-error" class="form-error" role="alert" aria-live="polite" hidden></p>
+          </div>
+          <div class="form-group">
+            <label for="phone">Phone number <span class="req" aria-hidden="true">*</span></label>
+            <input type="tel" id="phone" name="phone" autocomplete="tel" required placeholder="(403) 123-4567" aria-describedby="phone-error">
+            <p id="phone-error" class="form-error" role="alert" aria-live="polite" hidden></p>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="email">Email address <span class="req" aria-hidden="true">*</span></label>
+          <input type="email" id="email" name="email" autocomplete="email" required placeholder="jane@example.com" aria-describedby="email-error">
+          <p id="email-error" class="form-error" role="alert" aria-live="polite" hidden></p>
+        </div>
+
+        <div class="form-group">
+          <label>Preferred contact method <span class="req" aria-hidden="true">*</span></label>
+          <div class="radio-group" role="radiogroup" aria-label="Preferred contact method" aria-describedby="contact-method-error">
+            <label class="radio-option" id="contact-email-label">
+              <input type="radio" name="contact_method" value="Email" required>
+              Email
+            </label>
+            <label class="radio-option" id="contact-phone-label">
+              <input type="radio" name="contact_method" value="Phone">
+              Phone
+            </label>
+            <label class="radio-option" id="contact-either-label">
+              <input type="radio" name="contact_method" value="Either">
+              Either
+            </label>
+          </div>
+          <p id="contact-method-error" class="form-error" role="alert" aria-live="polite" hidden></p>
+        </div>
+
+        <div class="form-divider"></div>
+        <p class="form-section-label">About the child</p>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="age-range">Age range <span class="req" aria-hidden="true">*</span></label>
+            <select id="age-range" name="age_range" required aria-describedby="age-note age-range-error">
+              <option value="" disabled selected>Select an age range</option>
+              <option value="under-12-months">Under 12 months</option>
+              <option value="1-2-years">1 - 2 years</option>
+              <option value="3-4-years">3 - 4 years</option>
+              <option value="5-6-years">5 - 6 years</option>
+              <option value="over-6-years">Over 6 years</option>
+            </select>
+            <div class="age-note" id="age-note" role="alert">
+              <i class="ti ti-info-circle" aria-hidden="true"></i>
+              <span>I currently serve children 16 months to 6 years old.</span>
+            </div>
+            <p id="age-range-error" class="form-error" role="alert" aria-live="polite" hidden></p>
+          </div>
+          <div class="form-group">
+            <label for="start-date">Desired start date</label>
+            <input type="date" id="start-date" name="start_date">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="care-schedule">Care schedule needed <span class="req" aria-hidden="true">*</span></label>
+          <select id="care-schedule" name="care_schedule" required aria-describedby="care-schedule-error">
+            <option value="" disabled selected>Select a care schedule</option>
+            <option value="full-time">Full-time</option>
+            <option value="part-time">Part-time</option>
+            <option value="flexible">Flexible</option>
+          </select>
+          <p id="care-schedule-error" class="form-error" role="alert" aria-live="polite" hidden></p>
+        </div>
+
+        <div class="form-divider"></div>
+        <p class="form-section-label">Message</p>
+
+        <div class="form-group">
+          <label for="message">Anything you'd like me to know <span class="req" aria-hidden="true">*</span></label>
+          <textarea id="message" name="message" required maxlength="1000" placeholder="Tell me about your child's routine, any special considerations, or questions you have." aria-describedby="char-count message-error"></textarea>
+          <p class="char-counter" id="char-count"><span>0</span> / 1000</p>
+          <p id="message-error" class="form-error" role="alert" aria-live="polite" hidden></p>
+        </div>
+
+        <div class="honeypot" aria-hidden="true">
+          <label for="hp-field">Leave this blank</label>
+          <input type="text" id="hp-field" name="website" tabindex="-1" autocomplete="off">
+        </div>
+
+        <button type="submit" class="btn-submit" id="submit-btn">Submit inquiry</button>
+        <p class="form-disclaimer">Please note that scheduling and enrollment are subject to availability and compatibility.</p>
+
+      </form>
+    </section>
+
+    <aside class="sidebar" aria-label="What to expect">
+
+      <div class="sidebar-block">
+        <p class="sidebar-label">What to expect</p>
+        <div class="process-step">
+          <div class="step-num">1</div>
+          <p class="step-text"><strong>Inquiry</strong><br>I'll check your care schedule against current availability.</p>
+        </div>
+        <div class="process-step">
+          <div class="step-num">2</div>
+          <p class="step-text"><strong>Initial phone call</strong><br>If there's a potential fit, we'll schedule a short call to learn more.</p>
+        </div>
+        <div class="process-step">
+          <div class="step-num">3</div>
+          <p class="step-text"><strong>In-person tour</strong><br>Come visit, meet me, see the space, and ask questions.</p>
+        </div>
+      </div>
+
+      <div class="sidebar-divider"></div>
+
+      <div class="sidebar-block">
+        <p class="sidebar-label">Hours & location</p>
+        <div class="trust-item">
+          <div class="trust-icon"><i class="ti ti-clock" aria-hidden="true"></i></div>
+          <p class="trust-text">Mon - Fri, 7:00 AM - 5:00 PM</p>
+        </div>
+        <div class="trust-item">
+          <div class="trust-icon"><i class="ti ti-map-pin" aria-hidden="true"></i></div>
+          <p class="trust-text">Riverstone Cranston, SE Calgary, AB</p>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  {{FOOTER}}
+</div>
+
+{{PRIVACY_MODAL}}
+
+<script src="/assets/js/contact-form.js"></script>
+<script src="/assets/js/animations.js"></script>
+<script src="/assets/js/main.js"></script>
+</body>
+</html>

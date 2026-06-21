@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gallery - Happy Times Dayhome</title>
+  <link rel="stylesheet" href="/assets/css/tabler-icons.min.css">
+  <link rel="stylesheet" href="/assets/css/styles.css">
+  <style>
+    .content-plant svg {
+      height: 175px;
+      width: auto;
+      display: block;
+    }
+    .page-header {
+      padding-bottom: 0px !important;
+    }
+    .page-header .content-plant {
+      margin-bottom: 0 !important;
+    }
+  </style>
+</head>
+<body>
+
+<div class="site">
+  {{NAV}}
+
+  <section class="page-header">
+    <div class="page-header-inner" style="display: flex; flex-direction: row; align-items: flex-start; gap: 2rem; width: 100%;">
+      <div class="page-header-text" style="flex: 0 1 auto;">
+        <p class="page-eyebrow">Gallery</p>
+        <h1 class="page-headline">A look at where your child will spend their day.</h1>
+        <p class="page-sub">Photos from our play areas, outdoor space, and daily routines.</p>
+      </div>
+      <div class="content-plant" style="flex: 1; display: flex; justify-content: center; align-items: flex-start;">{{LARGE_PLANT}}</div>
+    </div>
+  </section>
+
+  <section class="gallery-section fade-in-section">
+    <div class="bento-grid" role="list" aria-label="Gallery of dayhome spaces and activities">
+
+      <div class="tile tile-photo tile-hero" role="listitem">
+        <i class="ti ti-photo" aria-hidden="true"></i>
+        <span class="tile-label">Main play area</span>
+      </div>
+
+      <div class="tile tile-photo tile-wide-a" role="listitem">
+        <i class="ti ti-trees" aria-hidden="true"></i>
+        <span class="tile-label">Outdoor play space</span>
+      </div>
+
+      <div class="tile tile-photo tile-small-a" role="listitem">
+        <i class="ti ti-palette" aria-hidden="true"></i>
+        <span class="tile-label">Craft table setup</span>
+      </div>
+
+      <div class="tile tile-photo tile-small-b" role="listitem">
+        <i class="ti ti-books" aria-hidden="true"></i>
+        <span class="tile-label">Reading corner</span>
+      </div>
+
+      <div class="tile tile-photo tile-small-c" role="listitem">
+        <i class="ti ti-apple" aria-hidden="true"></i>
+        <span class="tile-label">Snack setup</span>
+      </div>
+
+      <div class="tile tile-photo tile-small-d" role="listitem">
+        <i class="ti ti-puzzle" aria-hidden="true"></i>
+        <span class="tile-label">Toys and puzzles</span>
+      </div>
+
+      <div class="tile tile-photo tile-small-e" role="listitem">
+        <i class="ti ti-pencil" aria-hidden="true"></i>
+        <span class="tile-label">Morning activity</span>
+      </div>
+
+      <div class="tile tile-photo tile-small-f" role="listitem">
+        <i class="ti ti-balloon" aria-hidden="true"></i>
+        <span class="tile-label">Creative play</span>
+      </div>
+
+      <div class="tile tile-photo tile-small-g" role="listitem">
+        <i class="ti ti-bed" aria-hidden="true"></i>
+        <span class="tile-label">Quiet rest area</span>
+      </div>
+
+      <div class="tile tile-photo tile-small-h" role="listitem">
+        <i class="ti ti-building-community" aria-hidden="true"></i>
+        <span class="tile-label">Neighborhood walks</span>
+      </div>
+
+      <div class="tile tile-text tile-txt-a" role="listitem">
+        <i class="ti ti-shield-check txt-icon" aria-hidden="true"></i>
+        <p class="txt-heading">Licensed &amp; inspected</p>
+        <p class="txt-body">Agency licensed with regular government inspections. All adults in the home are background checked.</p>
+      </div>
+
+      <div class="tile tile-text tile-txt-b" role="listitem">
+        <i class="ti ti-certificate txt-icon" aria-hidden="true"></i>
+        <p class="txt-heading">ECE 3 certified</p>
+        <p class="txt-body">Trained early childhood education background behind every day.</p>
+      </div>
+
+      <div class="tile tile-text tile-txt-c" role="listitem">
+        <i class="ti ti-clock txt-icon" aria-hidden="true"></i>
+        <p class="txt-heading">Mon - Fri, 7 AM - 5 PM</p>
+        <p class="txt-body">Full-time, part-time, and flexible care schedules available.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <section class="ig-section fade-in-section">
+    <p class="ig-eyebrow">More photos</p>
+    <h2 class="ig-heading">Follow along on Instagram.</h2>
+    <p class="ig-sub">Day-to-day moments, seasonal activities, and a closer look at what life at Happy Times actually looks like.</p>
+    <a class="ig-btn" href="https://www.instagram.com/happytimesdayhome/" target="_blank" rel="noopener noreferrer">
+      <i class="ti ti-brand-instagram" aria-hidden="true"></i>
+      @happytimesdayhome
+    </a>
+  </section>
+
+  {{FOOTER}}
+</div>
+
+{{PRIVACY_MODAL}}
+
+<script src="/assets/js/animations.js"></script>
+<script src="/assets/js/main.js"></script>
+</body>
+</html>
