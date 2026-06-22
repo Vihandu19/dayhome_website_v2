@@ -376,7 +376,9 @@ jobs:
             --exclude ".git/*" \
             --exclude ".github/*" \
             --exclude ".DS_Store" \
-            --exclude "*.md"
+            --exclude "*.md" \
+            --include "sitemap.xml" \
+            --include "robots.txt"
 
       - name: Invalidate CloudFront cache
         run: |
@@ -476,7 +478,193 @@ A 403 on the direct S3 URL confirms OAC + bucket policy is working correctly.
 
 ## Performance & Discovery Optimization
 
-For a detailed engineering breakdown of the on-page SEO strategy, Web Vitals asset optimization (WebP/CLS mitigation), and CloudFront edge caching configurations utilized to protect the project's financial guardrails, see [PERFORMANCE.md](./PERFORMANCE.md).
+For a detailed engineering breakdown of Web Vitals asset optimization (WebP/CLS mitigation) and CloudFront edge caching configurations, see [PERFORMANCE.md](./PERFORMANCE.md).
+
+---
+
+## SEO & Local Discovery
+
+This section documents all on-page SEO, structured data, and local search strategy decisions for the dayhome website.
+
+### Sitemap.xml
+
+- **Location**: `/sitemap.xml` (root, served via CloudFront alongside HTML)
+- **Coverage**: All four public pages - Home, About, Gallery, Contact
+- **Format**: Static XML, no build step required - update manually when pages are added or removed
+- **Submission**: Submit to Google Search Console after verification (see below)
+- **Included in S3 sync**: Yes - must not be excluded from the deployment sync command
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://yourdomain.com/</loc><priority>1.0</priority></url>
+  <url><loc>https://yourdomain.com/about/</loc><priority>0.8</priority></url>
+  <url><loc>https://yourdomain.com/gallery/</loc><priority>0.7</priority></url>
+  <url><loc>https://yourdomain.com/contact/</loc><priority>0.6</priority></url>
+</urlset>
+```
+
+---
+
+### Robots.txt
+
+- **Location**: `/robots.txt` (root, served via CloudFront)
+- **Strategy**: Allow all legitimate crawlers; point to sitemap; block docs directory (not served on S3 but defensive)
+- **Included in S3 sync**: Yes - must not be excluded
+
+```text
+User-agent: *
+Allow: /
+Disallow: /docs/
+
+Sitemap: https://yourdomain.com/sitemap.xml
+```
+
+---
+
+### Google Search Console
+
+- **Purpose**: Index coverage monitoring, sitemap submission, Core Web Vitals field data, and manual crawl requests
+- **Verification method**: HTML file (preferred for static sites - no server-side meta tag injection required)
+  - Download `google[verification_code].html` from Search Console
+  - Place in project root
+  - Deploy to S3 (include in sync, do not exclude)
+  - Verify in Search Console
+- **Post-verification steps**:
+  1. Submit `sitemap.xml` URL
+  2. Monitor Coverage report for 404s and index issues
+  3. Monitor Core Web Vitals report (field data, not just lab)
+  4. Request indexing for each page URL manually on first launch
+
+---
+
+### Meta Descriptions
+
+Each page has a unique `<meta name="description">` tag targeting parent search intent. Descriptions are under 160 characters and include location and primary differentiator.
+
+| Page | Meta Description |
+|------|-----------------|
+| Home | Licensed, ECE Level 2 certified family dayhome in Riverstone Cranston, Calgary. Full-time care for ages 3 mos to 6 yrs. Clean background checks, first aid certified. |
+| About | Learn about our childcare philosophy, daily routine, and what makes Happy Times Dayhome a warm, licensed second home for your child in Cranston. |
+| Gallery | Photos of our play areas, outdoor space, and daily routines at Happy Times Dayhome in Riverstone Cranston, SE Calgary. |
+| Contact | Submit an inquiry to Happy Times Dayhome. Licensed family childcare in Riverstone Cranston, SE Calgary, AB. Currently accepting inquiries for full-time and part-time care. |
+
+---
+
+### Unique Page Titles
+
+Title format: `[Page Topic] | Happy Times Dayhome | Calgary` - keeps brand consistent while front-loading the keyword-relevant page topic for SERP display.
+
+| Page | `<title>` |
+|------|-----------|
+| Home | `Licensed Family Dayhome in Riverstone Cranston, Calgary \| Happy Times` |
+| About | `About the Caregiver \| Happy Times Dayhome Calgary` |
+| Gallery | `Gallery \| Happy Times Dayhome \| Cranston, Calgary` |
+| Contact | `Submit an Inquiry \| Happy Times Dayhome Calgary` |
+
+---
+
+### LocalBusiness Schema (JSON-LD)
+
+Structured data placed in a `<script type="application/ld+json">` block in the `<head>` of `index.html` (homepage only). Uses `ChildCare` type, a valid subtype of `LocalBusiness` in Schema.org.
+
+- **Address**: Neighborhood-level only (Riverstone Cranston, Calgary, AB) - no street number for privacy
+- **Telephone**: Add once confirmed with the dayhome owner
+- **Validate with**: [Google Rich Results Test](https://search.google.com/test/rich-results)
+
+```json
+{
+  "@context": "https://schema.org",
+  "@type": "ChildCare",
+  "name": "Happy Times Dayhome",
+  "description": "Licensed, ECE Level 2 certified family dayhome in Riverstone Cranston, Calgary. Full-time care for children ages 3 months to 6 years.",
+  "address": {
+    "@type": "PostalAddress",
+    "addressLocality": "Calgary",
+    "addressRegion": "AB",
+    "addressCountry": "CA",
+    "neighborhood": "Riverstone Cranston"
+  },
+  "openingHoursSpecification": {
+    "@type": "OpeningHoursSpecification",
+    "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday"],
+    "opens": "07:00",
+    "closes": "17:00"
+  },
+  "areaServed": {
+    "@type": "GeoCircle",
+    "geoMidpoint": {
+      "@type": "GeoCoordinates",
+      "latitude": 50.8742,
+      "longitude": -113.9827
+    },
+    "geoRadius": "10000"
+  },
+  "url": "https://yourdomain.com"
+}
+```
+
+---
+
+### Google Business Profile
+
+- **Setup**: [business.google.com](https://business.google.com)
+- **Business category**: Child Care Agency (primary), Childcare (secondary)
+- **NAP (Name / Address / Phone)**: Must exactly match schema and website for local SEO consistency
+  - Name: Happy Times Dayhome
+  - Address: Riverstone Cranston, Calgary, AB (neighborhood-level - exact address can be set as "service area" to keep home address private)
+  - Phone: TBD - confirm with owner before publishing
+- **Content to add**:
+  - Hours (Mon-Fri 7:00 AM - 5:00 PM)
+  - Description (pull from Home page meta description)
+  - Photos (play area, craft table, outdoor space - same photo policy applies: no identifiable faces, no exterior shots showing house number or street)
+  - Link to website
+- **Privacy note**: Use "service area" mode rather than a pinned address to avoid exposing the exact home location on Google Maps
+
+---
+
+### Image Optimization
+
+All images must be converted and delivered in WebP format with JPEG fallback using `<picture>` elements. Images are the largest assets on the page and the primary LCP risk.
+
+**Format and compression targets**:
+- Format: WebP (primary), JPEG (fallback)
+- Quality: 82% WebP, 85% JPEG
+- Max width: 900px (matches `.site` max-width constraint)
+- Hero/LCP image: preloaded with `<link rel="preload" as="image">`
+
+**Implementation pattern**:
+```html
+<picture>
+  <source srcset="/assets/images/playroom.webp" type="image/webp">
+  <img src="/assets/images/playroom.jpg" alt="Play area with toys and natural light"
+       width="900" height="600" loading="lazy">
+</picture>
+```
+
+- `loading="lazy"` on all images except the LCP/hero image
+- Explicit `width` and `height` attributes on every `<img>` to prevent Cumulative Layout Shift (CLS)
+- Alt text strategy: descriptive, activity-focused, no child names, no location identifiers
+
+**Alt text examples**:
+- "Open play area with shelves of toys and natural window light"
+- "Child hands arranging colorful puzzle pieces at a craft table"
+- "Outdoor play space with grass and shaded seating area"
+
+---
+
+### Heading Structure
+
+One `<h1>` per page. All secondary content uses `<h2>`. Subsections within a content block use `<h3>`. No heading levels are skipped.
+
+| Page | H1 | H2 Sections |
+|------|----|-------------|
+| Home | "A safe, caring home for your child to grow." | About the caregiver, Quick facts, Interested in a spot? |
+| About | "More than childcare - a second home." | Our story, How we approach care, A typical day, Sound like a fit? |
+| Gallery | "A look at where your child will spend their day." | (Gallery grid is non-hierarchical; section uses `aria-label`) Follow along on Instagram |
+| Contact | "Submit an inquiry." | (Form uses `<fieldset>` + `<legend>` groupings instead of headings) |
+
+**Rule**: Page `<h1>` must be visible text, not hidden or visually replaced. Never use a heading purely for styling - use CSS classes on semantic elements instead.
 
 ---
 
@@ -551,7 +739,11 @@ dayhome-website-v2/
 ├── index.html                  <-- Generated homepage (from template)
 ├── error.html                  <-- Generated custom 404 page (from template)
 ├── favicon.ico                 <-- Website tab icon
+├── sitemap.xml                 <-- Static sitemap (submitted to Google Search Console)
+├── robots.txt                  <-- Crawl directives; points to sitemap.xml
+├── google[code].html           <-- Google Search Console ownership verification file
 ├── build.js                    <-- Build script (run locally before deploy)
+├── README.md                   <-- Project overview and architecture diagram (repo root)
 |
 ├── partials/                   <-- Shared HTML components (source of truth)
 │   ├── nav.html
@@ -585,13 +777,18 @@ dayhome-website-v2/
 │   ├── fonts/
 │   │   └── tabler-icons.woff2    <-- Tabler Icons font (Phase 3: localized from CDN)
 │   └── images/
-│       ├── caregiver.jpg
+│       ├── caregiver.webp        <-- WebP primary format
+│       ├── caregiver.jpg         <-- JPEG fallback
+│       ├── playroom.webp
 │       ├── playroom.jpg
+│       ├── outdoor-area.webp
 │       └── outdoor-area.jpg
 |
 └── docs/                       <-- Kept locally (Exclude from S3 upload)
     ├── PROJECT.md
-    └── CONTEXT.md
+    ├── CONTEXT.md
+    ├── PERFORMANCE.md
+    └── HANDOFF.md              <-- Migration and handoff documentation
 
 ```
 
@@ -621,7 +818,9 @@ This compiles templates with partials, injects active nav states, and writes fin
 
 ### Files Excluded from S3 Upload
 - `partials/`, `templates/`, `build.js`, `docs/`, `.github/` - source files only needed at build time or CI/CD.
-- Only generated HTML + `assets/` + `favicon.ico` go to S3.
+- `README.md` - repo documentation, not a page.
+- Only generated HTML + `assets/` + `favicon.ico` + `sitemap.xml` + `robots.txt` + `google[code].html` go to S3.
+- **Critical**: `sitemap.xml`, `robots.txt`, and the Google Search Console verification file must NOT be added to the `--exclude` list in the sync command - they must reach S3 to be crawlable.
 
 ### Deployment Mechanics
 
@@ -643,10 +842,106 @@ aws s3 sync . s3://your-dayhome-s3-bucket-name \
   --exclude ".git/*" \
   --exclude ".github/*" \
   --exclude ".DS_Store" \
-  --exclude "*.md"
+  --exclude "*.md" \
+  --include "sitemap.xml" \
+  --include "robots.txt"
 
 # 3. Invalidate CloudFront edge caches
 aws cloudfront create-invalidation \
   --distribution-id YOUR_CLOUDFRONT_DISTRIBUTION_ID \
   --paths "/*"
+```
+
+---
+
+## Project Documentation
+
+### HANDOFF.md (Migration & Handoff Plan)
+
+**Location**: `docs/HANDOFF.md` - excluded from S3 upload, lives in the repo for the next developer or for V's own reference when context-switching back to this project.
+
+**Purpose**: Captures everything a developer needs to pick up this project cold - environment setup, secrets, dependencies, and the current build/deploy runbook. Prevents re-discovery of already-made decisions.
+
+**Required sections**:
+
+1. **Project State** - What phase is the project currently in and what was last completed
+2. **Environment Setup** - Node version, AWS CLI version, AWS profile config, required global tools
+3. **Secrets & Credentials** - Where each secret lives (GitHub Actions Secrets UI, not in code) and what each is for
+4. **AWS Resources Inventory** - Names/ARNs of: S3 bucket, CloudFront distribution, API Gateway, Lambda function, SES verified identity, IAM users/roles
+5. **Build & Deploy Runbook** - Step-by-step for local compile + manual deploy + automated deploy trigger
+6. **DNS Configuration** - Registrar, CNAME records, ACM certificate ARN and validation method
+7. **Known Issues & Tech Debt** - Current open items, deferred tasks, rough edges
+8. **Decision Log** - Key architectural decisions already made and why (points to CONTEXT.md for detail)
+
+**Update rule**: HANDOFF.md is updated at the end of every development phase, not at the start of the next one.
+
+---
+
+### README.md (Repo Root)
+
+**Location**: Repo root - visible on GitHub landing page. Serves as the entry point for anyone navigating the repository.
+
+**Purpose**: High-level orientation, architecture diagram, and quick-start for development. Not a substitute for PROJECT.md or CONTEXT.md - links to them.
+
+**Required sections**:
+
+1. **Project name and one-line description**
+2. **Architecture Diagram** (see below)
+3. **Tech Stack** - HTML/CSS/JS, AWS S3, CloudFront, API Gateway, Lambda, SES, GitHub Actions
+4. **Local Development** - `node build.js`, open `index.html` directly in browser (no dev server needed)
+5. **Deployment** - Push to `main` triggers GitHub Actions automatically; manual CLI fallback in `docs/PROJECT.md`
+6. **Repository Structure** - One-paragraph summary pointing to key directories
+7. **Docs** - Links to `docs/PROJECT.md`, `docs/CONTEXT.md`, `docs/HANDOFF.md`, `docs/PERFORMANCE.md`
+
+**Architecture Diagram** (ASCII - renders in GitHub Markdown without dependencies):
+
+```
+                        VISITOR
+                           |
+                    [HTTPS Request]
+                           |
+                    +------v-------+
+                    |  CloudFront  |  <-- TLS termination (ACM cert)
+                    |  (CDN Edge)  |  <-- OAC signs requests to S3
+                    +------+-------+
+                           |
+              +------------+-------------+
+              |                          |
+     [Static asset request]    [POST /submit-inquiry]
+              |                          |
+     +--------v-------+       +----------v----------+
+     |   Amazon S3    |       |    API Gateway       |
+     | (private; OAC  |       |  (HTTP API; throttle:|
+     |  auth only)    |       |   2 req/s, burst 5)  |
+     +----------------+       +----------+----------+
+                                         |
+                               +---------v----------+
+                               |   Lambda (Node.js)  |
+                               |  Validate + Format   |
+                               +---------+----------+
+                                         |
+                               +---------v----------+
+                               |     AWS SES         |
+                               |  (Sandbox; forwards  |
+                               |   to owner inbox)   |
+                               +--------------------+
+
+
+  DEPLOYMENT (GitHub Actions - triggered on push to main)
+  ┌─────────────────────────────────────────────────────────┐
+  │  Checkout -> node build.js -> aws s3 sync -> CF inval.  │
+  └─────────────────────────────────────────────────────────┘
+```
+
+**Diagram format note**: If the repo later adopts a more complex architecture, replace ASCII with a Mermaid diagram block (renders natively in GitHub):
+
+```md
+```mermaid
+flowchart TD
+    A[Visitor] --> B[CloudFront CDN]
+    B --> C[S3 - Static Files]
+    B --> D[API Gateway]
+    D --> E[Lambda]
+    E --> F[SES - Email]
+` ``
 ```
