@@ -50,7 +50,7 @@ To align with family dayhome business standards, the website must clearly commun
 The website must clearly communicate key operational information for parents:
 
 * **Ages Accepted**
-* Clearly specify age ranges served (3 months to 6 years).
+* Clearly specify age ranges served (16 months to 6 years).
 
 
 * **Hours of Operation**
@@ -170,7 +170,7 @@ The form implements real-time client-side validation as a strict firewall before
 | Email Address | Required + valid email format (RFC 5322 subset) | "Please enter a valid email address" |
 | Phone Number | Required + valid North American format (10 digits, flexible formatting) | "Please enter a valid phone number." |
 | Preferred Contact Method | Required (one radio must be selected) | "Please select a preferred contact method" |
-| Child's Age | Required + not "Over 6 years" | "We currently serve children 3 months to 6 years old" |
+| Child's Age | Required + must be within 16 months - 6 years | "We currently serve children 16 months to 6 years old" |
 | Care Schedule Needed | Required | "Please select a care schedule" |
 | Message | Required + max 1000 characters | "Message must be 1000 characters or fewer" |
 | Honeypot (website) | Must be empty | Silent discard (no UI error) |
@@ -269,7 +269,7 @@ Validation rules:
 * All fields except Desired Start Date: required
 * Email: format validated (regex)
 * Message: max 1000 characters; frontend shows live character counter so Parents self-regulate before submit
-* Age Range: out-of-range value blocks submission at frontend; Lambda rejects it server-side as well
+* Age Range: must be within 16 months to 6 years; frontend blocks "Under 16 months" and "Over 6 years" selections instantly with inline error and submit-button disable; Lambda rejects out-of-range values server-side (400 Bad Request)
 * Honeypot field: if populated, request silently discarded (no error returned to caller)
 
 ---
@@ -372,11 +372,15 @@ jobs:
             --exclude "partials/*" \
             --exclude "templates/*" \
             --exclude "docs/*" \
+            --exclude "mocks/*" \
             --exclude "build.js" \
             --exclude ".git/*" \
             --exclude ".github/*" \
             --exclude ".DS_Store" \
             --exclude "*.md" \
+            --exclude "mockServiceWorker.js" \
+            --exclude "msw-worker.js" \
+            --exclude "assets/msw-worker.js" \
             --include "sitemap.xml" \
             --include "robots.txt"
 
@@ -544,7 +548,7 @@ Each page has a unique `<meta name="description">` tag targeting parent search i
 
 | Page | Meta Description |
 |------|-----------------|
-| Home | Licensed, ECE Level 2 certified family dayhome in Riverstone Cranston, Calgary. Full-time care for ages 3 mos to 6 yrs. Clean background checks, first aid certified. |
+| Home | Licensed, ECE Level 2 certified family dayhome in Riverstone Cranston, Calgary. Full-time care for ages 16 mos to 6 yrs. Clean background checks, first aid certified. |
 | About | Learn about our childcare philosophy, daily routine, and what makes Happy Times Dayhome a warm, licensed second home for your child in Cranston. |
 | Gallery | Photos of our play areas, outdoor space, and daily routines at Happy Times Dayhome in Riverstone Cranston, SE Calgary. |
 | Contact | Submit an inquiry to Happy Times Dayhome. Licensed family childcare in Riverstone Cranston, SE Calgary, AB. Currently accepting inquiries for full-time and part-time care. |
@@ -577,7 +581,7 @@ Structured data placed in a `<script type="application/ld+json">` block in the `
   "@context": "https://schema.org",
   "@type": "ChildCare",
   "name": "Happy Times Dayhome",
-  "description": "Licensed, ECE Level 2 certified family dayhome in Riverstone Cranston, Calgary. Full-time care for children ages 3 months to 6 years.",
+  "description": "Licensed, ECE Level 2 certified family dayhome in Riverstone Cranston, Calgary. Full-time care for children ages 16 months to 6 years.",
   "address": {
     "@type": "PostalAddress",
     "addressLocality": "Calgary",
@@ -713,6 +717,27 @@ AWS WAF is excluded to maintain a strict <$1/month budget. CloudFront is include
 
 ## Infrastructure Design
 
+### Development Infrastructure & Tooling
+
+This project uses a local mock testing environment for the contact form, enabling full end-to-end validation without deploying to AWS. This provides confidence in form behavior before production deployment.
+
+**Mock Service Worker (MSW)**
+- Intercepts `POST /submit-inquiry` on localhost only
+- Validates submissions using identical rules to the production AWS Lambda (including 16-month floor / 6-year ceiling age validation)
+- Runs entirely in the browser via a Service Worker - no Node server required
+- Zero production impact: only activates when `window.location.hostname` is `localhost` or `127.0.0.1`
+- The `mocks/` directory and generated worker files are **gitignored and excluded from GitHub Actions / CloudFront production deployments**
+
+**Local Build Tooling (esbuild)**
+- Bundles `mocks/browser.js` (with MSW imports) into a single self-contained IIFE file at `assets/msw-worker.js`
+- Avoids browser module resolution issues with MSW's internal dependencies
+- Copies `mockServiceWorker.js` (from `@mswjs/worker`) to project root so Service Worker registration scope covers all routes (`/`, `/contact/`, `/about/`, etc.)
+
+**npm Scripts**
+- `npm run build` - Runs `build.js` (compiles templates + bundles MSW worker + stages SW files)
+- `npm run dev` - Runs `npm run build && npx serve .` (starts local static server with MSW active)
+- `npm run test:msw` - Runs `npm run build && echo 'Open http://localhost:3000/contact/ to test with MSW'`
+
 ### AWS Services Used
 
 * S3 (Static asset storage; private asset origin; S3 Static Website Hosting disabled)
@@ -776,19 +801,31 @@ dayhome-website-v2/
 │   │   └── contact-form.js       <-- Contact form logic (extracted Phase 2)
 │   ├── fonts/
 │   │   └── tabler-icons.woff2    <-- Tabler Icons font (Phase 3: localized from CDN)
-│   └── images/
-│       ├── caregiver.webp        <-- WebP primary format
-│       ├── caregiver.jpg         <-- JPEG fallback
-│       ├── playroom.webp
-│       ├── playroom.jpg
-│       ├── outdoor-area.webp
-│       └── outdoor-area.jpg
+│   ├── images/
+│   │   ├── caregiver.webp        <-- WebP primary format
+│   │   ├── caregiver.jpg         <-- JPEG fallback
+│   │   ├── playroom.webp
+│   │   ├── playroom.jpg
+│   │   ├── outdoor-area.webp
+│   │   └── outdoor-area.jpg
+│   └── msw-worker.js             <-- Generated MSW worker bundle (excluded from production)
+|
+├── mocks/                      <-- Local mock handlers (gitignored, dev only)
+│   ├── handlers.js             <-- MSW request handlers with validation parity
+│   └── browser.js              <-- MSW worker entry point (bundled by esbuild)
+|
+├── mockServiceWorker.js        <-- Copied from @mswjs/worker (gitignored, dev only)
+├── msw-worker.js               <-- Legacy MSW bundle location (gitignored, dev only)
+├── test-msw-final.js           <-- MSW full validation test (dev only)
+├── test-msw-honeypot.js        <-- MSW honeypot/bot detection test (dev only)
+├── test-msw-client-validation.js <-- MSW client-side validation test suite (dev only)
 |
 └── docs/                       <-- Kept locally (Exclude from S3 upload)
     ├── PROJECT.md
     ├── CONTEXT.md
     ├── PERFORMANCE.md
-    └── HANDOFF.md              <-- Migration and handoff documentation
+    ├── HANDOFF.md              <-- Migration and handoff documentation
+    └── LOCAL_MOCK_SETUP.md     <-- MSW local development documentation
 
 ```
 
@@ -816,10 +853,18 @@ This compiles templates with partials, injects active nav states, and writes fin
 - **Reasoning**: Prevents dead code execution on static informational pages (Home, About, Gallery, Error). Reduces unnecessary JS parsing/execution.
 - **Implementation**: Template structure already enforced this isolation - `contact.template.html` includes all three scripts; other templates include only `animations.js` and `main.js`. Build process preserves this correctly in generated pages.
 
+### MSW Worker Build Process (Phase 4)
+The `build.js` script now includes an MSW bundling step using esbuild:
+
+1. **Bundle MSW worker**: esbuild bundles `mocks/browser.js` (which imports MSW handlers and `@mswjs/worker`) into a single IIFE file at `assets/msw-worker.js`. This avoids browser module resolution issues with MSW's internal dependencies.
+2. **Copy Service Worker runtime**: Copies `mockServiceWorker.js` from `@mswjs/worker` to the project root so the Service Worker registration scope covers all routes (`/`, `/contact/`, `/about/`, etc.).
+3. **Conditional loading**: `assets/js/contact-form.js` detects localhost/127.0.0.1 and dynamically registers the MSW worker - zero production impact.
+
 ### Files Excluded from S3 Upload
-- `partials/`, `templates/`, `build.js`, `docs/`, `.github/` - source files only needed at build time or CI/CD.
+- `partials/`, `templates/`, `build.js`, `docs/`, `.github/`, `mocks/` - source files only needed at build time or CI/CD.
 - `README.md` - repo documentation, not a page.
-- Only generated HTML + `assets/` + `favicon.ico` + `sitemap.xml` + `robots.txt` + `google[code].html` go to S3.
+- `mockServiceWorker.js`, `msw-worker.js` (both project root and `assets/msw-worker.js`) - local dev only, gitignored.
+- Only generated HTML + `assets/` (minus `msw-worker.js`) + `favicon.ico` + `sitemap.xml` + `robots.txt` + `google[code].html` go to S3.
 - **Critical**: `sitemap.xml`, `robots.txt`, and the Google Search Console verification file must NOT be added to the `--exclude` list in the sync command - they must reach S3 to be crawlable.
 
 ### Deployment Mechanics
@@ -838,11 +883,15 @@ aws s3 sync . s3://your-dayhome-s3-bucket-name \
   --exclude "partials/*" \
   --exclude "templates/*" \
   --exclude "docs/*" \
+  --exclude "mocks/*" \
   --exclude "build.js" \
   --exclude ".git/*" \
   --exclude ".github/*" \
   --exclude ".DS_Store" \
   --exclude "*.md" \
+  --exclude "mockServiceWorker.js" \
+  --exclude "msw-worker.js" \
+  --exclude "assets/msw-worker.js" \
   --include "sitemap.xml" \
   --include "robots.txt"
 

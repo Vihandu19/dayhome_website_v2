@@ -7,6 +7,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const esbuild = require('esbuild');
 
 const ROOT = __dirname;
 const PARTIALS_DIR = path.join(ROOT, 'partials');
@@ -101,4 +102,56 @@ function buildPage(page) {
 // Build all pages
 console.log('Building site...\n');
 pages.forEach(buildPage);
-console.log('\nBuild complete!');
+
+// Bundle MSW mock worker for local development (localhost only)
+async function bundleMswWorker() {
+  const mswWorkerSrc = path.join(ROOT, 'mocks', 'browser.js');
+  const mswWorkerDest = path.join(ROOT, 'assets', 'msw-worker.js');
+
+  if (!fs.existsSync(mswWorkerSrc)) {
+    console.warn('⚠ MSW worker source not found at:', mswWorkerSrc);
+    return;
+  }
+
+  try {
+    await esbuild.build({
+      entryPoints: [mswWorkerSrc],
+      bundle: true,
+      outfile: mswWorkerDest,
+      format: 'iife',
+      globalName: 'mswWorker',
+      platform: 'browser',
+      target: 'es2020',
+      minify: false,
+      sourcemap: false,
+    });
+    console.log('✓ Bundled MSW worker to assets/msw-worker.js');
+  } catch (error) {
+    console.error('⚠ Failed to bundle MSW worker:', error.message);
+  }
+}
+
+// Copy MSW service worker (for Service Worker registration)
+// Copy to project root so Service Worker scope covers all routes (/, /contact/, /about/, etc.)
+const mswWorkerSrc = path.join(ROOT, 'node_modules', 'msw', 'lib', 'mockServiceWorker.js');
+const mswWorkerDest = path.join(ROOT, 'mockServiceWorker.js');
+if (fs.existsSync(mswWorkerSrc)) {
+  fs.copyFileSync(mswWorkerSrc, mswWorkerDest);
+  console.log('✓ Copied MSW service worker to project root (for SW scope)');
+} else {
+  console.warn('⚠ MSW service worker not found at:', mswWorkerSrc);
+}
+
+// Also copy to assets/ for reference
+const mswWorkerDestAssets = path.join(ROOT, 'assets', 'mockServiceWorker.js');
+if (fs.existsSync(mswWorkerSrc)) {
+  fs.copyFileSync(mswWorkerSrc, mswWorkerDestAssets);
+}
+
+// Run MSW worker bundling
+bundleMswWorker().then(() => {
+  console.log('\nBuild complete!');
+}).catch((error) => {
+  console.error('Build failed:', error);
+  process.exit(1);
+});

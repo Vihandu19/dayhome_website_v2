@@ -1,46 +1,46 @@
 # macOS
 .DS_Store
 
+# Operating System Files
+Thumbs.db
+
+# Node dependencies
+node_modules/
+
+# Local Development Generated Artifacts (MSW)
+mockServiceWorker.js
+msw-worker.js
+assets/msw-worker.js
+
+# Build Outputs & Temporary Files
+dist/
+build/
+*.tmp
+*.temp
+coverage/
+
 # Logs
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# Environment variables / secrets
+# Environment Variables & Secrets
 .env
 .env.*
 !.env.example
+*.pem
 
-# AWS credentials
+# AWS CLI Config & Local Credentials
 .aws/
+credentials
+config
 
-# Node dependencies
-node_modules/
-
-# Build artifacts
-dist/
-build/
-
-# IDE files
+# IDE Project Files
 .vscode/
 .idea/
 
-# OS files
-Thumbs.db
-
-# Temporary files
-*.tmp
-*.temp
-
-# Coverage
-coverage/
-
-# Terraform
+# Infrastructure as Code State (Defensive)
 .terraform/
 *.tfstate
 *.tfstate.*
-
-# Local AWS CLI config files
-credentials
-config

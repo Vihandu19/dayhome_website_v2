@@ -3,6 +3,15 @@
  * Extracted from contact.template.html for maintainability
  */
 
+// Initialize bundled MSW mock worker on localhost only (zero production impact)
+if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+  const script = document.createElement('script');
+  script.src = '/assets/msw-worker.js';
+  script.onload = () => console.log('[MSW] Bundled worker loaded');
+  script.onerror = () => console.warn('[MSW] Failed to load bundled worker');
+  document.head.appendChild(script);
+}
+
 document.addEventListener('DOMContentLoaded', function() {
   const form = document.getElementById('inquiry-form');
   const successState = document.getElementById('success-state');
@@ -33,7 +42,7 @@ document.addEventListener('DOMContentLoaded', function() {
     },
     'age-range': {
       validate: validateAgeRange,
-      message: 'We currently serve children 3 months to 6 years old'
+      message: 'We currently serve children 16 months to 6 years old'
     },
     'care-schedule': {
       validate: validateRequired,
@@ -69,10 +78,11 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
-  // Age range validation - disable submit if "over-6-years" selected
+  // Age range validation - disable submit if "over-6-years" or "under-16-months" selected
   if (ageSelect && ageNote && submitBtn) {
     ageSelect.addEventListener('change', function() {
-      if (this.value === 'over-6-years') {
+      const ineligibleAge = this.value === 'over-6-years' || this.value === 'under-16-months';
+      if (ineligibleAge) {
         ageNote.classList.add('visible');
         submitBtn.disabled = true;
       } else {
@@ -132,7 +142,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   function validateAgeRange(value) {
-    return validateRequired(value) && value !== 'over-6-years';
+    return validateRequired(value) && value !== 'over-6-years' && value !== 'under-16-months';
   }
 
   function validateRadioGroup(name) {
@@ -248,7 +258,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Form submission handling
   if (form) {
-    form.addEventListener('submit', function(e) {
+    form.addEventListener('submit', async function(e) {
       e.preventDefault();
 
       // Honeypot check
@@ -262,14 +272,57 @@ document.addEventListener('DOMContentLoaded', function() {
 
       // Valid submission - soft cooldown (UX rate limit)
       submitBtn.disabled = true;
-      submitBtn.textContent = 'Submitted';
+      submitBtn.textContent = 'Submitting...';
       submitBtn.classList.add('btn-submit--submitted');
 
-      // Simulate submission (replace with actual fetch to API Gateway)
-      setTimeout(function() {
-        form.style.display = 'none';
-        successState.classList.add('visible');
-      }, 800);
+      try {
+        // Serialize form data
+        const formData = new FormData(form);
+
+        // Submit to API (will be intercepted by MSW on localhost)
+        const response = await fetch('/submit-inquiry', {
+          method: 'POST',
+          body: formData,
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          // Success - show overlay
+          form.style.display = 'none';
+          successState.classList.add('visible');
+          submitBtn.textContent = 'Submitted';
+        } else {
+          // Server-side validation failed (shouldn't happen if client validation passes, but handle it)
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Submit inquiry';
+          submitBtn.classList.remove('btn-submit--submitted');
+
+          // Display server errors
+          if (result.errors) {
+            Object.entries(result.errors).forEach(([field, message]) => {
+              const errorEl = document.getElementById(field + '-error');
+              const fieldEl = document.querySelector(fieldSelectors[field]);
+              if (errorEl && fieldEl) {
+                errorEl.textContent = message;
+                errorEl.hidden = false;
+                fieldEl.closest('.form-group')?.classList.add('form-group--error');
+                fieldEl.setAttribute('aria-invalid', 'true');
+              }
+            });
+            // Focus first error
+            const firstErrorField = Object.keys(result.errors)[0];
+            focusFirstInvalid(firstErrorField);
+          }
+        }
+      } catch (error) {
+        // Network error or other failure
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Submit inquiry';
+        submitBtn.classList.remove('btn-submit--submitted');
+        console.error('Submission error:', error);
+        alert('An error occurred. Please try again.');
+      }
     });
   }
 });

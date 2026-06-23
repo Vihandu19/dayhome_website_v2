@@ -1,5 +1,18 @@
 {
+  "type": "module",
+  "scripts": {
+    "build": "node build.js",
+    "dev": "npm run build && npx serve .",
+    "test:msw": "npm run build && echo 'Open http://localhost:3000/contact/ to test with MSW'",
+    "test:msw:final": "node test-msw-final.js",
+    "test:msw:honeypot": "node test-msw-honeypot.js",
+    "test:msw:client": "node test-msw-client-validation.js"
+  },
   "dependencies": {
     "playwright": "^1.61.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.1",
+    "msw": "^2.14.6"
   }
 }
