@@ -761,72 +761,72 @@ dayhome-website-v2/
 │   └── workflows/
 │       └── deploy.yml              <-- GitHub Actions CI/CD pipeline
 |
-├── index.html                  <-- Generated homepage (from template)
-├── error.html                  <-- Generated custom 404 page (from template)
-├── favicon.ico                 <-- Website tab icon
-├── sitemap.xml                 <-- Static sitemap (submitted to Google Search Console)
-├── robots.txt                  <-- Crawl directives; points to sitemap.xml
-├── google[code].html           <-- Google Search Console ownership verification file
-├── build.js                    <-- Build script (run locally before deploy)
-├── README.md                   <-- Project overview and architecture diagram (repo root)
+├── assets/                         <-- Static assets (source of truth)
+│   ├── css/
+│   │   ├── styles.css
+│   │   └── tabler-icons.min.css
+│   ├── js/
+│   │   ├── main.js
+│   │   ├── animations.js
+│   │   └── contact-form.js
+│   ├── fonts/
+│   │   └── tabler-icons.woff2
+│   ├── images/
+│   │   ├── caregiver.webp
+│   │   ├── caregiver.jpg
+│   │   ├── playroom.webp
+│   │   ├── playroom.jpg
+│   │   ├── outdoor-area.webp
+│   │   └── outdoor-area.jpg
+│   └── msw-worker.js               <-- Generated MSW worker (dev only, gitignored)
 |
-├── partials/                   <-- Shared HTML components (source of truth)
+├── dist/                           <-- Build output (gitignored, deployed to S3)
+│   ├── index.html                  <-- Generated homepage
+│   ├── error.html                  <-- Generated custom 404 page
+│   ├── about/
+│   │   └── index.html              <-- Generated (URL: /about/)
+│   ├── gallery/
+│   │   └── index.html              <-- Generated (URL: /gallery/)
+│   ├── contact/
+│   │   └── index.html              <-- Generated (URL: /contact/)
+│   ├── assets/                     <-- Copied static assets
+│   ├── sitemap.xml                 <-- Copied from root
+│   └── robots.txt                  <-- Copied from root
+|
+├── partials/                       <-- Shared HTML components (source of truth)
 │   ├── nav.html
 │   ├── footer.html
 │   └── privacy-modal.html
 |
-├── templates/                  <-- Page templates with placeholders
+├── templates/                      <-- Page templates with placeholders
 │   ├── index.template.html
 │   ├── about.template.html
 │   ├── gallery.template.html
 │   ├── contact.template.html
 │   └── error.template.html
 |
-├── about/
-│   └── index.html              <-- Generated (URL: /about/)
+├── mocks/                          <-- Local mock handlers (gitignored, dev only)
+│   ├── handlers.js
+│   └── browser.js
 |
-├── gallery/
-│   └── index.html              <-- Generated (URL: /gallery/)
+├── mockServiceWorker.js            <-- Copied from @mswjs/worker (gitignored, dev only)
+├── msw-worker.js                   <-- Legacy MSW bundle (gitignored, dev only)
+├── test-msw-final.js               <-- MSW validation test (dev only)
+├── test-msw-honeypot.js            <-- MSW honeypot test (dev only)
+├── test-msw-client-validation.js   <-- MSW client validation test (dev only)
 |
-├── contact/
-│   └── index.html              <-- Generated (URL: /contact/)
+├── sitemap.xml                     <-- Static sitemap (source, copied to /dist)
+├── robots.txt                      <-- Crawl directives (source, copied to /dist)
+├── build.js                        <-- Build script (run locally before deploy)
+├── package.json
+├── README.md                       <-- Project overview (repo root)
 |
-├── assets/                     <-- Static assets (served via CloudFront)
-│   ├── css/
-│   │   ├── styles.css
-│   │   └── tabler-icons.min.css  <-- Tabler Icons CSS (Phase 3: localized from CDN)
-│   ├── js/
-│   │   ├── main.js
-│   │   ├── animations.js
-│   │   └── contact-form.js       <-- Contact form logic (extracted Phase 2)
-│   ├── fonts/
-│   │   └── tabler-icons.woff2    <-- Tabler Icons font (Phase 3: localized from CDN)
-│   ├── images/
-│   │   ├── caregiver.webp        <-- WebP primary format
-│   │   ├── caregiver.jpg         <-- JPEG fallback
-│   │   ├── playroom.webp
-│   │   ├── playroom.jpg
-│   │   ├── outdoor-area.webp
-│   │   └── outdoor-area.jpg
-│   └── msw-worker.js             <-- Generated MSW worker bundle (excluded from production)
-|
-├── mocks/                      <-- Local mock handlers (gitignored, dev only)
-│   ├── handlers.js             <-- MSW request handlers with validation parity
-│   └── browser.js              <-- MSW worker entry point (bundled by esbuild)
-|
-├── mockServiceWorker.js        <-- Copied from @mswjs/worker (gitignored, dev only)
-├── msw-worker.js               <-- Legacy MSW bundle location (gitignored, dev only)
-├── test-msw-final.js           <-- MSW full validation test (dev only)
-├── test-msw-honeypot.js        <-- MSW honeypot/bot detection test (dev only)
-├── test-msw-client-validation.js <-- MSW client-side validation test suite (dev only)
-|
-└── docs/                       <-- Kept locally (Exclude from S3 upload)
+└── docs/                           <-- Kept locally (excluded from S3 upload)
     ├── PROJECT.md
     ├── CONTEXT.md
     ├── PERFORMANCE.md
-    ├── HANDOFF.md              <-- Migration and handoff documentation
-    └── LOCAL_MOCK_SETUP.md     <-- MSW local development documentation
-
+    ├── HANDOFF.md
+    └── LOCAL_MOCK_SETUP.md
 ```
 
 ---
@@ -854,18 +854,18 @@ This compiles templates with partials, injects active nav states, and writes fin
 - **Implementation**: Template structure already enforced this isolation - `contact.template.html` includes all three scripts; other templates include only `animations.js` and `main.js`. Build process preserves this correctly in generated pages.
 
 ### MSW Worker Build Process (Phase 4)
-The `build.js` script now includes an MSW bundling step using esbuild:
+The `build.js` script includes an MSW bundling step using esbuild that runs **only in development** (`NODE_ENV !== 'production'`):
 
-1. **Bundle MSW worker**: esbuild bundles `mocks/browser.js` (which imports MSW handlers and `@mswjs/worker`) into a single IIFE file at `assets/msw-worker.js`. This avoids browser module resolution issues with MSW's internal dependencies.
-2. **Copy Service Worker runtime**: Copies `mockServiceWorker.js` from `@mswjs/worker` to the project root so the Service Worker registration scope covers all routes (`/`, `/contact/`, `/about/`, etc.).
+1. **Bundle MSW worker**: esbuild bundles `mocks/browser.js` into a single IIFE file at `dist/assets/msw-worker.js` (in development). This avoids browser module resolution issues with MSW's internal dependencies.
+2. **Copy Service Worker runtime**: Copies `mockServiceWorker.js` from `@mswjs/worker` to `dist/` root so the Service Worker registration scope covers all routes (`/`, `/contact/`, `/about/`, etc.) when serving from `dist/`.
 3. **Conditional loading**: `assets/js/contact-form.js` detects localhost/127.0.0.1 and dynamically registers the MSW worker - zero production impact.
+4. **Production builds**: When `NODE_ENV=production`, all MSW steps are skipped entirely. The `/dist` output contains only production assets.
 
 ### Files Excluded from S3 Upload
-- `partials/`, `templates/`, `build.js`, `docs/`, `.github/`, `mocks/` - source files only needed at build time or CI/CD.
-- `README.md` - repo documentation, not a page.
-- `mockServiceWorker.js`, `msw-worker.js` (both project root and `assets/msw-worker.js`) - local dev only, gitignored.
-- Only generated HTML + `assets/` (minus `msw-worker.js`) + `favicon.ico` + `sitemap.xml` + `robots.txt` + `google[code].html` go to S3.
-- **Critical**: `sitemap.xml`, `robots.txt`, and the Google Search Console verification file must NOT be added to the `--exclude` list in the sync command - they must reach S3 to be crawlable.
+
+The `/dist` directory isolates production assets completely. Only `/dist` is synced to S3.
+Source directories (`partials/`, `templates/`, `build.js`, `docs/`, `.github/`, `mocks/`) and dev files (`mockServiceWorker.js`, `msw-worker.js`, `test-msw-*.js`) never reach the bucket — they remain in the repo root only.
+- **Critical**: `sitemap.xml`, `robots.txt` are copied into `/dist` by the build script, so they reach S3 automatically without special handling.
 
 ### Deployment Mechanics
 
@@ -874,26 +874,12 @@ The `build.js` script now includes an MSW bundling step using esbuild:
 **Manual fallback**: Direct AWS CLI deployment if pipeline is unavailable.
 
 ```bash
-# 1. Compile templates
+# 1. Compile templates to /dist
 node build.js
 
-# 2. Sync compiled site and assets to the private S3 bucket
-aws s3 sync . s3://your-dayhome-s3-bucket-name \
-  --delete \
-  --exclude "partials/*" \
-  --exclude "templates/*" \
-  --exclude "docs/*" \
-  --exclude "mocks/*" \
-  --exclude "build.js" \
-  --exclude ".git/*" \
-  --exclude ".github/*" \
-  --exclude ".DS_Store" \
-  --exclude "*.md" \
-  --exclude "mockServiceWorker.js" \
-  --exclude "msw-worker.js" \
-  --exclude "assets/msw-worker.js" \
-  --include "sitemap.xml" \
-  --include "robots.txt"
+# 2. Sync /dist to the private S3 bucket
+# No --exclude flags needed — /dist contains ONLY production assets
+aws s3 sync dist/ s3://your-dayhome-s3-bucket-name --delete
 
 # 3. Invalidate CloudFront edge caches
 aws cloudfront create-invalidation \

@@ -2,7 +2,8 @@
   "type": "module",
   "scripts": {
     "build": "node build.js",
-    "dev": "npm run build && npx serve .",
+    "build:prod": "NODE_ENV=production node build.js",
+    "dev": "npm run build && npx serve dist",
     "test:msw": "npm run build && echo 'Open http://localhost:3000/contact/ to test with MSW'",
     "test:msw:final": "node test-msw-final.js",
     "test:msw:honeypot": "node test-msw-honeypot.js",
