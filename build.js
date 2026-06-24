@@ -106,6 +106,7 @@ console.log('✓ Copied assets/ to dist/assets/');
 
 fs.copyFileSync(path.join(ROOT, 'sitemap.xml'), path.join(DIST, 'sitemap.xml'));
 fs.copyFileSync(path.join(ROOT, 'robots.txt'), path.join(DIST, 'robots.txt'));
+fs.copyFileSync(path.join(ROOT, 'google659f7d4e9d3e2ab4.html'), path.join(DIST, 'google659f7d4e9d3e2ab4.html'));
 console.log('✓ Copied sitemap.xml and robots.txt to dist/');
 
 // MSW bundling — ONLY in development, targets /dist directly
