@@ -8,7 +8,6 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -17,6 +16,10 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+
+      # THIS IS THE MISSING STEP
+      - name: Install dependencies
+        run: npm install
 
       - name: Build site
         run: node build.js
