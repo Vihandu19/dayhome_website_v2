@@ -22,7 +22,6 @@ document.addEventListener('DOMContentLoaded', function() {
   const ageNote = document.getElementById('age-note');
   const radioOptions = document.querySelectorAll('.radio-option');
 
-  // Validation rules and messages
   const validationRules = {
     'parent-name': {
       validate: validateRequired,
@@ -54,7 +53,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   };
 
-  // Field selectors for validation
   const fieldSelectors = {
     'parent-name': '#parent-name',
     'phone': '#phone',
@@ -65,20 +63,16 @@ document.addEventListener('DOMContentLoaded', function() {
     'message': '#message'
   };
 
-  // Track validation state
   const validationState = {};
 
-  // Character counter for message textarea
   if (msgField && charCount) {
     msgField.addEventListener('input', function() {
       const count = this.value.length;
       charCount.querySelector('span').textContent = count;
-      // Real-time validation for message length
       validateField('message');
     });
   }
 
-  // Age range validation - disable submit if "over-6-years" or "under-16-months" selected
   if (ageSelect && ageNote && submitBtn) {
     ageSelect.addEventListener('change', function() {
       const ineligibleAge = this.value === 'over-6-years' || this.value === 'under-16-months';
@@ -93,7 +87,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
-  // Radio group visual selection state
   radioOptions.forEach(function(opt) {
     const radio = opt.querySelector('input[type="radio"]');
     if (radio) {
@@ -107,7 +100,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   });
 
-  // Blur validation for all fields
   Object.keys(fieldSelectors).forEach(function(fieldName) {
     const selector = fieldSelectors[fieldName];
     const elements = document.querySelectorAll(selector);
@@ -115,7 +107,6 @@ document.addEventListener('DOMContentLoaded', function() {
       el.addEventListener('blur', function() {
         validateField(fieldName);
       });
-      // Clear error on input (real-time feedback)
       el.addEventListener('input', function() {
         if (validationState[fieldName] === false) {
           clearError(fieldName);
@@ -124,14 +115,12 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   });
 
-  // Validation functions
   function validateRequired(value) {
     return value !== null && value.trim().length > 0;
   }
 
   function validateEmail(value) {
     if (!validateRequired(value)) return false;
-    // RFC 5322 compliant regex (practical subset)
     const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/;
     return emailRegex.test(value.trim());
   }
@@ -152,9 +141,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   function validatePhone(value) {
     if (!validateRequired(value)) return false;
-    // Strip all non-digit characters
     const digits = value.replace(/\D/g, '');
-    // Must be exactly 10 digits (North American format without country code)
     return digits.length === 10;
   }
 
@@ -164,10 +151,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const selector = fieldSelectors[fieldName];
     const elements = document.querySelectorAll(selector);
+
     let isValid;
 
     if (fieldName === 'contact_method') {
-      // validateRadioGroup queries DOM directly, doesn't need a value
       isValid = validateRadioGroup(fieldName);
     } else {
       const el = elements[0];
@@ -214,9 +201,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     elements.forEach(function(el) {
       const formGroup = el.closest('.form-group');
-      if (formGroup) {
-        formGroup.classList.add('form-group--error');
-      }
+      if (formGroup) formGroup.classList.add('form-group--error');
       el.setAttribute('aria-invalid', 'true');
     });
 
@@ -234,9 +219,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     elements.forEach(function(el) {
       const formGroup = el.closest('.form-group');
-      if (formGroup) {
-        formGroup.classList.remove('form-group--error');
-      }
+      if (formGroup) formGroup.classList.remove('form-group--error');
       el.setAttribute('aria-invalid', 'false');
     });
 
@@ -249,79 +232,71 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   function focusFirstInvalid(fieldName) {
-    const selector = fieldSelectors[fieldName];
-    const el = document.querySelector(selector);
-    if (el) {
-      el.focus();
-    }
+    const el = document.querySelector(fieldSelectors[fieldName]);
+    if (el) el.focus();
   }
 
-  // Form submission handling
+  // =========================
+  // FORM SUBMISSION (FIXED)
+  // =========================
   if (form) {
     form.addEventListener('submit', async function(e) {
       e.preventDefault();
 
-      // Honeypot check
       const hp = document.getElementById('hp-field');
       if (hp && hp.value) return;
 
-      // Run full validation
-      if (!validateAllFields()) {
-        return;
-      }
+      if (!validateAllFields()) return;
 
-      // Valid submission - soft cooldown (UX rate limit)
       submitBtn.disabled = true;
       submitBtn.textContent = 'Submitting...';
       submitBtn.classList.add('btn-submit--submitted');
 
       try {
-        // Serialize form data
-        const formData = new FormData(form);
 
-        // Submit to API (will be intercepted by MSW on localhost)
-        const response = await fetch('/submit-inquiry', {
+        // Build payload safely (no undefined values breaking JSON)
+        const payload = {
+          parentName: String(document.getElementById('parent-name')?.value || ''),
+          email: String(document.getElementById('email')?.value || ''),
+          phone: String(document.getElementById('phone')?.value || ''),
+          contactMethod: String(document.querySelector('input[name="contact_method"]:checked')?.value || ''),
+          childAge: String(document.getElementById('age-range')?.value || ''),
+          startDate: String(document.getElementById('start-date')?.value || ''),
+          schedule: String(document.getElementById('care-schedule')?.value || ''),
+          message: String(document.getElementById('message')?.value || ''),
+          website: String(document.getElementById('website')?.value || '')
+        };
+
+        // FINAL FIX: guaranteed valid JSON
+        const response = await fetch('https://8vuebj7rte.execute-api.us-east-1.amazonaws.com/submit-inquiry', {
           method: 'POST',
-          body: formData,
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(payload)
         });
 
         const result = await response.json();
 
-        if (result.success) {
-          // Success - show overlay
+        if (response.ok && result.ok) {
           form.style.display = 'none';
           successState.classList.add('visible');
           submitBtn.textContent = 'Submitted';
         } else {
-          // Server-side validation failed (shouldn't happen if client validation passes, but handle it)
           submitBtn.disabled = false;
           submitBtn.textContent = 'Submit inquiry';
           submitBtn.classList.remove('btn-submit--submitted');
 
-          // Display server errors
-          if (result.errors) {
-            Object.entries(result.errors).forEach(([field, message]) => {
-              const errorEl = document.getElementById(field + '-error');
-              const fieldEl = document.querySelector(fieldSelectors[field]);
-              if (errorEl && fieldEl) {
-                errorEl.textContent = message;
-                errorEl.hidden = false;
-                fieldEl.closest('.form-group')?.classList.add('form-group--error');
-                fieldEl.setAttribute('aria-invalid', 'true');
-              }
-            });
-            // Focus first error
-            const firstErrorField = Object.keys(result.errors)[0];
-            focusFirstInvalid(firstErrorField);
-          }
+          alert(result.error || 'Server rejected submission.');
         }
+
       } catch (error) {
-        // Network error or other failure
         submitBtn.disabled = false;
         submitBtn.textContent = 'Submit inquiry';
         submitBtn.classList.remove('btn-submit--submitted');
+
         console.error('Submission error:', error);
-        alert('An error occurred. Please try again.');
+        alert('An error occurred while submitting. Please try again.');
       }
     });
   }
