@@ -12,7 +12,7 @@ The goal is to demonstrate practical AWS cloud architecture fundamentals (SAA-le
 
 ## Pages
 
-* **Home**: Landing page for cold-traffic parents. Includes a dedicated Trust Signals section (background checks, ECE Level 2, CPR certs, licensing) visible without navigating away. Credibility must be established on this page.
+* **Home**: Landing page for cold-traffic parents. Includes a dedicated Trust Signals section (background checks, ECE Level 3, CPR certs, licensing) visible without navigating away. Credibility must be established on this page.
 * **About**: Personal story page - caregiver motivation, childcare philosophy, and what makes the environment distinctive. Not a credentials dump.
 * **Gallery**: Static image gallery hosted via S3.
 * **Contact**: Form page that submits Inquiries to a backend API.
@@ -130,7 +130,7 @@ The layout is implemented using CSS Grid with responsive sizing to ensure consis
 * Small (1x1): tight moment shots - crafts, toys, snack setups.
 * Wide (2x1): activity scenes - outdoor play, reading corner.
 * Large (2x2): hero shot - the primary space or most inviting scene.
-* Text (1x1 or 2x1): short copy overlays - e.g. "Licensed & Inspected", "ECE Level 2 Certified", hours blurb.
+* Text (1x1 or 2x1): short copy overlays - e.g. "Licensed & Inspected", "ECE Level 3 Certified", hours blurb.
 
 
 * **Fixed count** - always exactly 10 cells; no dynamic population, no pagination.
@@ -548,7 +548,7 @@ Each page has a unique `<meta name="description">` tag targeting parent search i
 
 | Page | Meta Description |
 |------|-----------------|
-| Home | Licensed, ECE Level 2 certified family dayhome in Riverstone Cranston, Calgary. Full-time care for ages 16 mos to 6 yrs. Clean background checks, first aid certified. |
+| Home | Licensed, ECE Level 3 certified family dayhome in Riverstone Cranston, Calgary. Full-time care for ages 16 mos to 6 yrs. Clean background checks, first aid certified. |
 | About | Learn about our childcare philosophy, daily routine, and what makes Happy Times Dayhome a warm, licensed second home for your child in Cranston. |
 | Gallery | Photos of our play areas, outdoor space, and daily routines at Happy Times Dayhome in Riverstone Cranston, SE Calgary. |
 | Contact | Submit an inquiry to Happy Times Dayhome. Licensed family childcare in Riverstone Cranston, SE Calgary, AB. Currently accepting inquiries for full-time and part-time care. |
@@ -581,7 +581,7 @@ Structured data placed in a `<script type="application/ld+json">` block in the `
   "@context": "https://schema.org",
   "@type": "ChildCare",
   "name": "Happy Times Dayhome",
-  "description": "Licensed, ECE Level 2 certified family dayhome in Riverstone Cranston, Calgary. Full-time care for children ages 16 months to 6 years.",
+  "description": "Licensed, ECE Level 3 certified family dayhome in Riverstone Cranston, Calgary. Full-time care for children ages 16 months to 6 years.",
   "address": {
     "@type": "PostalAddress",
     "addressLocality": "Calgary",
