@@ -19,7 +19,7 @@ Mock Service Worker (MSW) intercepts the contact form submission to `/submit-inq
 npm install
 
 # 2. Build site (compiles templates, bundles MSW worker with esbuild)
-npm run build
+nmp run build
 
 # 3. Start local server
 npm run dev

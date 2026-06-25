@@ -632,8 +632,8 @@ Structured data placed in a `<script type="application/ld+json">` block in the `
 All images must be converted and delivered in WebP format with JPEG fallback using `<picture>` elements. Images are the largest assets on the page and the primary LCP risk.
 
 **Format and compression targets**:
-- Format: WebP (primary), JPEG (fallback)
-- Quality: 82% WebP, 85% JPEG
+- Format:  JPEG ()
+- Quality: 875% JPEG
 - Max width: 900px (matches `.site` max-width constraint)
 - Hero/LCP image: preloaded with `<link rel="preload" as="image">`
 
@@ -749,7 +749,7 @@ This project uses a local mock testing environment for the contact form, enablin
 
 ### DNS
 
-* External domain provider (Route 53 hosted zones are bypassed to save $0.50/month base fee).
+* Porkbun domain.
 * CloudFront distribution domain name is mapped via a CNAME record at the external registrar.
 
 ### File Structure
@@ -825,9 +825,6 @@ dayhome-website-v2/
 |
 └── docs/                           <-- Kept locally (excluded from S3 upload)
     ├── PROJECT.md
-    ├── CONTEXT.md
-    ├── PERFORMANCE.md
-    ├── HANDOFF.md
     └── LOCAL_MOCK_SETUP.md
 ```
 
@@ -836,12 +833,6 @@ dayhome-website-v2/
 ## Build & Deployment Process
 
 ### Local Compilation
-
-Run locally before deploying to S3:
-
-```bash
-node build.js
-```
 
 This compiles templates with partials, injects active nav states, and writes final HTML with root-relative paths (`/assets/...`, `/about/`, etc.) that work at any directory depth.
 
@@ -871,88 +862,12 @@ Source directories (`partials/`, `templates/`, `build.js`, `docs/`, `.github/`, 
 
 ### Deployment Mechanics
 
-**Automated (primary)**: GitHub Actions triggers on every push to `main`. The pipeline runs `build.js`, syncs to S3, and invalidates CloudFront. No manual steps required.
-
-**Manual fallback**: Direct AWS CLI deployment if pipeline is unavailable.
+**Automated **: GitHub Actions triggers on every push to `main`. The pipeline runs `build.js`, syncs to S3, and invalidates CloudFront. No manual steps required.
 
 ```bash
-# 1. Compile templates to /dist locally
-node build.js
+# Sync /dist to the private S3 bucket and invalidate cloudfront cache
+git push origin main
+```
 
-# 2. Sync /dist to the private S3 bucket and invalidate cloudfront cache
-git push
 
 ---
-
-## Project Documentation
-
----
-
-### README.md (Repo Root)
-
-**Location**: Repo root - visible on GitHub landing page. Serves as the entry point for anyone navigating the repository.
-
-**Purpose**: High-level orientation, architecture diagram, and quick-start for development. Not a substitute for PROJECT.md or CONTEXT.md - links to them.
-
-**Required sections**:
-
-1. **Project name and one-line description**
-2. **Architecture Diagram** (see below)
-3. **Tech Stack** - HTML/CSS/JS, AWS S3, CloudFront, API Gateway, Lambda, SES, GitHub Actions
-4. **Local Development** - `node build.js`, open `index.html` directly in browser (no dev server needed)
-5. **Deployment** - Push to `main` triggers GitHub Actions automatically; manual CLI fallback in `docs/PROJECT.md`
-6. **Repository Structure** - One-paragraph summary pointing to key directories
-7. **Docs** - Links to `docs/PROJECT.md`, `docs/CONTEXT.md`, `docs/HANDOFF.md`, `docs/PERFORMANCE.md`
-
-**Architecture Diagram** (ASCII - renders in GitHub Markdown without dependencies):
-
-```
-                        VISITOR
-                           |
-                    [HTTPS Request]
-                           |
-                    +------v-------+
-                    |  CloudFront  |  <-- TLS termination (ACM cert)
-                    |  (CDN Edge)  |  <-- OAC signs requests to S3
-                    +------+-------+
-                           |
-              +------------+-------------+
-              |                          |
-     [Static asset request]    [POST /submit-inquiry]
-              |                          |
-     +--------v-------+       +----------v----------+
-     |   Amazon S3    |       |    API Gateway       |
-     | (private; OAC  |       |  (HTTP API; throttle:|
-     |  auth only)    |       |   2 req/s, burst 5)  |
-     +----------------+       +----------+----------+
-                                         |
-                               +---------v----------+
-                               |   Lambda (Node.js)  |
-                               |  Validate + Format   |
-                               +---------+----------+
-                                         |
-                               +---------v----------+
-                               |     AWS SES         |
-                               |  (Sandbox; forwards  |
-                               |   to owner inbox)   |
-                               +--------------------+
-
-
-  DEPLOYMENT (GitHub Actions - triggered on push to main)
-  ┌─────────────────────────────────────────────────────────┐
-  │  Checkout -> node build.js -> aws s3 sync -> CF inval.  │
-  └─────────────────────────────────────────────────────────┘
-```
-
-**Diagram format note**: If the repo later adopts a more complex architecture, replace ASCII with a Mermaid diagram block (renders natively in GitHub):
-
-```md
-```mermaid
-flowchart TD
-    A[Visitor] --> B[CloudFront CDN]
-    B --> C[S3 - Static Files]
-    B --> D[API Gateway]
-    D --> E[Lambda]
-    E --> F[SES - Email]
-` ``
-```

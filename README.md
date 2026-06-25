@@ -120,6 +120,4 @@ dayhome-website-v2/
 
 - [`docs/PROJECT.md`](docs/PROJECT.md) — Comprehensive project specification (architecture, design system, SEO, security, infrastructure)
 - [`docs/CONTEXT.md`](docs/CONTEXT.md) — Key decisions and rationale
-- [`docs/HANDOFF.md`](docs/HANDOFF.md) — Migration/handoff runbook
-- [`docs/PERFORMANCE.md`](docs/PERFORMANCE.md) — Web Vitals and caching details
 - [`docs/LOCAL_MOCK_SETUP.md`](docs/LOCAL_MOCK_SETUP.md) — MSW local development guide
