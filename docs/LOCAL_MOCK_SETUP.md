@@ -64,16 +64,6 @@ Watch browser DevTools console for:
 - GitHub Actions deploy excludes `mocks/`, `mockServiceWorker.js`, `msw-worker.js`
 - No MSW code runs in production CloudFront distribution
 
-## Troubleshooting
-
-| Issue | Fix |
-|-------|-----|
-| MSW not intercepting | Check `mockServiceWorker.js` exists in project root after build |
-| CORS errors | MSW runs same-origin; no CORS needed |
-| Form submits to real API | Verify hostname check in `browser.js` |
-| Validation differs from Lambda | Update `mocks/handlers.js` to match Lambda changes |
-| Scope warning in console | Ensure `mockServiceWorker.js` is at project root (copied by build.js) |
-
 ## Architecture
 
 ```

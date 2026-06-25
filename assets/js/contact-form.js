@@ -19,7 +19,6 @@ document.addEventListener('DOMContentLoaded', function() {
   const msgField = document.getElementById('message');
   const charCount = document.getElementById('char-count');
   const ageSelect = document.getElementById('age-range');
-  const ageNote = document.getElementById('age-note');
   const radioOptions = document.querySelectorAll('.radio-option');
 
   const validationRules = {
@@ -41,7 +40,7 @@ document.addEventListener('DOMContentLoaded', function() {
     },
     'age-range': {
       validate: validateAgeRange,
-      message: 'We currently serve children 16 months to 6 years old'
+      message: 'I currently serve children 16 months to 6 years old.'
     },
     'care-schedule': {
       validate: validateRequired,
@@ -73,16 +72,8 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
-  if (ageSelect && ageNote && submitBtn) {
+  if (ageSelect && submitBtn) {
     ageSelect.addEventListener('change', function() {
-      const ineligibleAge = this.value === 'over-6-years' || this.value === 'under-16-months';
-      if (ineligibleAge) {
-        ageNote.classList.add('visible');
-        submitBtn.disabled = true;
-      } else {
-        ageNote.classList.remove('visible');
-        submitBtn.disabled = false;
-      }
       validateField('age-range');
     });
   }

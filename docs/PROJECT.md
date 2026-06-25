@@ -791,6 +791,7 @@ dayhome-website-v2/
 │   │   └── index.html              <-- Generated (URL: /contact/)
 │   ├── assets/                     <-- Copied static assets
 │   ├── sitemap.xml                 <-- Copied from root
+│   ├── google659.html              <-- Copied from root
 │   └── robots.txt                  <-- Copied from root
 |
 ├── partials/                       <-- Shared HTML components (source of truth)
@@ -817,6 +818,7 @@ dayhome-website-v2/
 |
 ├── sitemap.xml                     <-- Static sitemap (source, copied to /dist)
 ├── robots.txt                      <-- Crawl directives (source, copied to /dist)
+├── google659.html                  <-- google console verification (source, copied to /dist)
 ├── build.js                        <-- Build script (run locally before deploy)
 ├── package.json
 ├── README.md                       <-- Project overview (repo root)
@@ -874,41 +876,15 @@ Source directories (`partials/`, `templates/`, `build.js`, `docs/`, `.github/`, 
 **Manual fallback**: Direct AWS CLI deployment if pipeline is unavailable.
 
 ```bash
-# 1. Compile templates to /dist
+# 1. Compile templates to /dist locally
 node build.js
 
-# 2. Sync /dist to the private S3 bucket
-# No --exclude flags needed — /dist contains ONLY production assets
-aws s3 sync dist/ s3://your-dayhome-s3-bucket-name --delete
-
-# 3. Invalidate CloudFront edge caches
-aws cloudfront create-invalidation \
-  --distribution-id YOUR_CLOUDFRONT_DISTRIBUTION_ID \
-  --paths "/*"
-```
+# 2. Sync /dist to the private S3 bucket and invalidate cloudfront cache
+git push
 
 ---
 
 ## Project Documentation
-
-### HANDOFF.md (Migration & Handoff Plan)
-
-**Location**: `docs/HANDOFF.md` - excluded from S3 upload, lives in the repo for the next developer or for V's own reference when context-switching back to this project.
-
-**Purpose**: Captures everything a developer needs to pick up this project cold - environment setup, secrets, dependencies, and the current build/deploy runbook. Prevents re-discovery of already-made decisions.
-
-**Required sections**:
-
-1. **Project State** - What phase is the project currently in and what was last completed
-2. **Environment Setup** - Node version, AWS CLI version, AWS profile config, required global tools
-3. **Secrets & Credentials** - Where each secret lives (GitHub Actions Secrets UI, not in code) and what each is for
-4. **AWS Resources Inventory** - Names/ARNs of: S3 bucket, CloudFront distribution, API Gateway, Lambda function, SES verified identity, IAM users/roles
-5. **Build & Deploy Runbook** - Step-by-step for local compile + manual deploy + automated deploy trigger
-6. **DNS Configuration** - Registrar, CNAME records, ACM certificate ARN and validation method
-7. **Known Issues & Tech Debt** - Current open items, deferred tasks, rough edges
-8. **Decision Log** - Key architectural decisions already made and why (points to CONTEXT.md for detail)
-
-**Update rule**: HANDOFF.md is updated at the end of every development phase, not at the start of the next one.
 
 ---
 
