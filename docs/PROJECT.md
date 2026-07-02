@@ -604,7 +604,7 @@ Structured data placed in a `<script type="application/ld+json">` block in the `
     },
     "geoRadius": "10000"
   },
-  "url": "https://yourdomain.com"
+  "url": "https://happytimesdayhome.com"
 }
 ```
 
