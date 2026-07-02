@@ -93,7 +93,7 @@ aws cloudfront create-invalidation --distribution-id YOUR_ID --paths "/*"
 ```
 dayhome-website-v2/
 ├── .github/workflows/deploy.yml    # CI/CD pipeline
-├── assets/                         # Static assets (CSS, JS, fonts, images)
+├── assets/                         # Static assets (CSS, JS, fonts, images)(copied to /dist)
 ├── dist/                           # Build output (gitignored, deployed to S3)
 │   ├── index.html
 │   ├── error.html
@@ -119,5 +119,4 @@ dayhome-website-v2/
 ## Documentation
 
 - [`docs/PROJECT.md`](docs/PROJECT.md) — Comprehensive project specification (architecture, design system, SEO, security, infrastructure)
-- [`docs/CONTEXT.md`](docs/CONTEXT.md) — Key decisions and rationale
 - [`docs/LOCAL_MOCK_SETUP.md`](docs/LOCAL_MOCK_SETUP.md) — MSW local development guide

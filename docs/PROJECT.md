@@ -862,12 +862,18 @@ Source directories (`partials/`, `templates/`, `build.js`, `docs/`, `.github/`, 
 
 ### Deployment Mechanics
 
-**Automated **: GitHub Actions triggers on every push to `main`. The pipeline runs `build.js`, syncs to S3, and invalidates CloudFront. No manual steps required.
+**Automated**: GitHub Actions triggers on every push to `main`. The pipeline runs `build.js`, syncs to S3, and invalidates CloudFront. No manual steps required.
 
 ```bash
 # Sync /dist to the private S3 bucket and invalidate cloudfront cache
 git push origin main
 ```
 
+**Manual Overide**: Via AWS CLI
 
+```bash
+npm run build:prod
+aws s3 sync dist/ s3://your-bucket-name --delete
+aws cloudfront create-invalidation --distribution-id YOUR_ID --paths "/*"
+```
 ---
