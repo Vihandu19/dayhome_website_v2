@@ -14,12 +14,22 @@ body { font-family: var(--font-serif); background: var(--color-background-tertia
   /* Readability Tuning for Serif Body Text */
   --line-height-body: 1.7;
   --letter-spacing-body: 0.01em;
+
+  /* Color System */
+  --color-text-primary: #1a1a1a;
+  --color-text-secondary: #4a4a4a;
+  --color-text-tertiary: #888888;
+  --color-background-primary: #ffffff;
+  --color-background-secondary: #f5f5f5;
+  --color-background-tertiary: #f5f5f5;
+  --color-border-secondary: rgba(0,0,0,0.15);
+  --color-border-tertiary: #e0e0e0;
 }
 
 /* ==========================================================================
    2. SHARED COMPONENTS (NAV, FOOTER, HEADER, BUTTONS)
    ========================================================================== */
-nav { display: flex; align-items: center; justify-content: space-between; padding: 18px 40px; border-bottom: 0.5px solid var(--color-border-tertiary); background: #ffffff; position: sticky; top: 0; z-index: 10; transition: padding var(--motion-smooth), background-color var(--motion-smooth), box-shadow var(--motion-smooth); }
+nav { display: flex; align-items: center; justify-content: space-between; padding: 18px 40px; border-bottom: 0.5px solid var(--color-border-tertiary); background: #ffffff; position: sticky; top: 0; z-index: 10; transition: padding var(--motion-smooth), background-color var(--motion-smooth), box-shadow var(--motion-smooth); position: relative; }
 .nav-scrolled { padding: 6px 40px; background: rgba(255, 255, 255, 0.9); box-shadow: 0 4px 12px rgba(0,0,0,0.03); backdrop-filter: blur(8px); }
 .nav-logo { font-size: 15px; font-weight: 500; color: var(--color-text-primary); letter-spacing: -0.3px; }
 .nav-logo span { color: #3B6D11; }
@@ -29,6 +39,7 @@ nav { display: flex; align-items: center; justify-content: space-between; paddin
 .nav-cta { background: #3B6D11; color: #fff; font-size: 13px; font-weight: 500; padding: 9px 18px; border-radius: 8px; text-decoration: none; transition: background var(--motion-smooth), transform var(--motion-smooth), box-shadow var(--motion-smooth); }
 .nav-cta:hover { background: #27500A; transform: translateY(-1px); box-shadow: 0 8px 18px rgba(59, 109, 17, 0.18); }
 .nav-cta:active { transform: scale(0.98); }
+.nav-hamburger { display: none; }
 
 footer { border-top: 0.5px solid var(--color-border-tertiary); padding: 28px 40px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; background: var(--color-background-secondary); }
 .footer-logo { font-size: 13px; font-weight: 500; color: var(--color-text-secondary); }
@@ -317,10 +328,16 @@ footer { border-top: 0.5px solid var(--color-border-tertiary); padding: 28px 40p
 /* ==========================================================================
    7. MEDIA QUERIES (MOBILE RESPONSIVE)
    ========================================================================== */
-@media(max-width: 640px) {
+@media (max-width: 640px) {
   nav { padding: 14px 20px; }
   .nav-scrolled { padding: 6px 20px; }
-  .nav-links { display: none; }
+  .nav-links { display: none; flex-direction: column; gap: 0; position: absolute; top: 100%; left: 0; right: 0; background: #fff; border-bottom: 0.5px solid var(--color-border-tertiary); padding: 12px 20px; }
+  .nav-links.nav-open { display: flex; }
+  .nav-hamburger { display: flex; flex-direction: column; justify-content: center; gap: 5px; width: 36px; height: 36px; background: none; border: none; cursor: pointer; padding: 4px; }
+  .nav-hamburger span { display: block; height: 1.5px; background: var(--color-text-primary); border-radius: 2px; transition: transform 0.2s, opacity 0.2s; }
+  .nav-hamburger.nav-open span:nth-child(1) { transform: translateY(6.5px) rotate(45deg); }
+  .nav-hamburger.nav-open span:nth-child(2) { opacity: 0; }
+  .nav-hamburger.nav-open span:nth-child(3) { transform: translateY(-6.5px) rotate(-45deg); }
   .page-header { padding: 36px 20px 32px; }
   .page-headline { font-size: 26px; }
   
@@ -353,7 +370,7 @@ footer { border-top: 0.5px solid var(--color-border-tertiary); padding: 28px 40p
 }
 
 /* Desktop: larger plants */
-@media(min-width: 900px) {
+@media (min-width: 900px) {
   .content-plant { width: 100px; margin-bottom: 28px; }
   .content-plant--float-left { float: left; margin: 0 24px 24px 0; }
 }
