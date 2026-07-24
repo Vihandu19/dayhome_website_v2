@@ -480,11 +480,6 @@ A 403 on the direct S3 URL confirms OAC + bucket policy is working correctly.
 
 ---
 
-## Performance & Discovery Optimization
-
-For a detailed engineering breakdown of Web Vitals asset optimization (WebP/CLS mitigation) and CloudFront edge caching configurations, see [PERFORMANCE.md](./PERFORMANCE.md).
-
----
 
 ## SEO & Local Discovery
 
