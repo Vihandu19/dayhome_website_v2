@@ -1,0 +1,19 @@
+{
+  "version": "1.0",
+  "context": {
+    "eventType": "viewer-request"
+  },
+  "viewer": {
+    "ip": "1.2.3.4"
+  },
+  "request": {
+    "method": "POST",
+    "uri": "/submit-inquiry",
+    "headers": {
+      "host": { "value": "www.happytimesdayhome.com" },
+      "content-type": { "value": "application/json" }
+    },
+    "cookies": {},
+    "querystring": {}
+  }
+}
