@@ -354,6 +354,24 @@ Verified across both breakpoints: butterfly's horizontal centre falls within the
 left/right bounds, and its bottom edge sits within 14px of the button's top, at full scroll
 on both 1280x720 and 375x812.
 
+**Landing approach reworked, twice more (requested after review).** Two follow-up problems
+after seeing it running.
+
+First, the "approach" node in the original landing logic was a hard-coded point offset left
+of the landing x, inserted between the wave and the landing point. Since the wave's last
+point always returned to the meander's centerline, the sequence was centerline -> left of
+target -> target: a visible zigzag right at the end, not a smooth arrival. Anchor generation
+was reworked so every point's horizontal centre eases from the meander's centerline toward
+the landing x using a smoothstep over the final 40% of the flight (by vertical fraction),
+while the oscillation amplitude decays to zero over the same span. The last swing dies out
+into the landing point rather than snapping onto it after a separate detour.
+
+Second, landing 12px above the button read as hovering, not perched. The landing y moved
+from `top - 12` to `top + 4` - a few pixels into the button's face rather than above it - so
+the body visually touches down on the surface. Verified: the rendered glyph's bottom edge
+sits 16-20px past the button's top (feet through the seam, wings above it), at both
+breakpoints, with no zigzag visible in the final approach segment of the path.
+
 **`offsetTop` replaced with rect-based measurement.** Giving sections `position: relative`
 for stacking also made them the `offsetParent`, so `.cta-section .btn-primary`'s `offsetTop`
 resolved against its section (~370) rather than `.site` (~1500). The flight ended a few

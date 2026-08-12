@@ -40,9 +40,14 @@ document.addEventListener('DOMContentLoaded', function() {
   // any width. Swing is clamped so it stays inside .site and never overflows.
   // Anchor count is set against the wave so it stays well sampled - too few
   // points per half-cycle and the bezier smoothing flattens the meander out.
+  //
+  // The final third of the flight eases the wave's centerline toward the
+  // landing x and decays the oscillation amplitude to zero, so the last
+  // swing dies down into the landing point instead of a separate hard-coded
+  // "approach" node that snapped sideways onto it.
   function anchors(width, startY, land) {
     const narrow = width <= 640;
-    const count = narrow ? 6 : 9;
+    const count = narrow ? 8 : 11;
     const turns = narrow ? 1.5 : 2;
     // Narrow screens have no slack in the centre, so ride the ragged right
     // edge of the text where the whitespace actually is.
@@ -50,20 +55,17 @@ document.addEventListener('DOMContentLoaded', function() {
     const mid = narrow ? width * 0.76 : width * 0.5;
     const points = [];
 
-    // The wave stops short of the button so the last leg can flatten out.
-    // Coming in steep would leave offset-rotate pointing the butterfly
-    // nose-down into the button, which reads as a dive, not a landing.
-    const waveEnd = land[1] - 90;
-    const wave = count - 2;
-
-    for (let i = 0; i < wave; i++) {
-      const t = i / (wave - 1);
-      points.push([mid + Math.sin(t * Math.PI * turns) * amp, startY + (waveEnd - startY) * t]);
+    for (let i = 0; i < count; i++) {
+      const t = i / (count - 1);
+      const settle = Math.max(0, Math.min(1, (t - 0.6) / 0.4));
+      const eased = settle * settle * (3 - 2 * settle);
+      const cx = mid + (land[0] - mid) * eased;
+      const localAmp = amp * (1 - eased);
+      points.push([cx + Math.sin(t * Math.PI * turns) * localAmp, startY + (land[1] - startY) * t]);
     }
 
-    const approach = Math.min(70, width * 0.2);
-    points.push([Math.max(8, Math.min(width - 8, land[0] - approach)), land[1] - 10]);
-    points.push(land);
+    // Land exactly on the computed point regardless of float error.
+    points[points.length - 1] = land;
 
     return points;
   }
@@ -137,13 +139,15 @@ document.addEventListener('DOMContentLoaded', function() {
     if (!frame) frame = window.requestAnimationFrame(tick);
   }
 
-  // Perch on the button's top edge rather than its face: the glyph greens are
-  // the same as the button's #3B6D11 fill, so landing on it would hide it.
+  // Perch on the button's top edge, a few px into its face, so the body
+  // visually rests on the surface instead of hovering above it. Off-centre
+  // horizontally (not on the button's own greens at #3B6D11) so the glyph
+  // stays readable against the fill.
   function landing(width, height) {
     if (!cta) return [width * 0.5, height * 0.9];
     const r = cta.getBoundingClientRect();
     const s = site.getBoundingClientRect();
-    return [r.left - s.left + r.width * 0.72, r.top - s.top - 12];
+    return [r.left - s.left + r.width * 0.72, r.top - s.top + 4];
   }
 
   function layout() {
