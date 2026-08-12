@@ -22,12 +22,14 @@ document.addEventListener('DOMContentLoaded', function() {
   const nav = site.querySelector('nav');
   const footer = site.querySelector('footer');
   const cta = site.querySelector('.cta-section .btn-primary');
+  const wings = svg.querySelectorAll('.bfly-wing');
 
   const native = window.CSS && CSS.supports('animation-timeline', 'scroll()');
 
   let frame = 0;
   let current = 0;
   let resizeTimer = 0;
+  let flaps = 14;
 
   function round(n) {
     return Math.round(n * 10) / 10;
@@ -88,6 +90,14 @@ document.addEventListener('DOMContentLoaded', function() {
   function apply(value) {
     bfly.style.offsetDistance = (value * 100).toFixed(2) + '%';
     mask.style.strokeDashoffset = (100 - value * 100).toFixed(2);
+
+    // Fallback only: CSS drives the wings off the same timeline where it can.
+    // Beats track scroll position, so the wings hold still when the page does.
+    const open = 0.65 + 0.35 * Math.cos(2 * Math.PI * value * flaps);
+    for (let i = 0; i < wings.length; i++) {
+      const s = wings[i].classList.contains('bfly-wing--m') ? -open : open;
+      wings[i].style.transform = 'scaleY(' + s.toFixed(3) + ')';
+    }
   }
 
   function progress() {
@@ -136,6 +146,12 @@ document.addEventListener('DOMContentLoaded', function() {
     bfly.style.offsetPath = 'path("' + d + '")';
 
     document.documentElement.style.setProperty('--bfly-rest', restHeight() + 'px');
+
+    // One beat per ~90px of scroll, so the rate feels the same on a short
+    // desktop page and a long phone one.
+    const range = document.documentElement.scrollHeight - window.innerHeight - restHeight();
+    flaps = Math.max(6, Math.min(40, Math.round(range / 90)));
+    document.documentElement.style.setProperty('--bfly-flaps', String(flaps));
 
     if (!native) {
       current = progress();

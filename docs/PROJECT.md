@@ -112,7 +112,7 @@ A stylized origami butterfly flies down the Home page as the visitor scrolls, le
 
 * **Files**: `partials/butterfly.svg` (glyph + trail), `assets/js/butterfly.js` (path generation + fallback), plus a `SCROLL BUTTERFLY` section in `styles.css`.
 * **Scroll binding**: CSS `animation-timeline: scroll(root block)` drives `offset-distance` on the butterfly and `stroke-dashoffset` on the trail mask. Browsers without scroll-driven animation fall back to a rAF loop in `butterfly.js` that lerps toward scroll progress and writes the same two properties.
-* **Wing flap**: a separate CSS keyframe loop on a nested `<g>`, so it composes with the path transform rather than competing for it. Flaps regardless of scroll speed.
+* **Wing flap**: a separate CSS keyframe animation on a nested `<g>`, so it composes with the path transform rather than competing for it. It runs on the same scroll timeline as the movement, so the wings only beat while the page is scrolling and hold still when it stops. `animation-iteration-count` divides the scroll range, and `--bfly-flaps` (set from JS at roughly one beat per 90px of scroll) controls beats per page rather than beats per second.
 * **Coordinate space**: the overlay's `viewBox` is set at runtime to `0 0 <site width> <site height>`, making one user unit one CSS pixel so `offset-path` and the drawn trail agree at every viewport width. The path `d` is generated in JS from anchors held as fractions.
 * **Reduced motion**: hidden entirely. The JS returns before generating anything, so no path, no listeners, no observer.
 

@@ -310,6 +310,24 @@ each split on its diagonal into a lit and a folded facet.
 **Wing flap floor raised from 0.18 to 0.3.** At 26px, closing to 18% made the butterfly
 vanish into a sliver for much of each cycle.
 
+**Wing flap retied to scroll (requested after review).** The original brief and the design
+above both called for a continuous, time-based flap that ran "regardless of scroll speed".
+After seeing it running, the owner asked for the opposite: the wings should beat only while
+the page is scrolling. The flap now runs on the same `scroll(root block)` timeline as the
+movement.
+
+`animation-iteration-count` divides the scroll range rather than repeating over time, so
+beats are a function of scroll distance. `--bfly-flaps` is set from JS at roughly one beat
+per 90px of scroll, clamped to 6..40, so the rate feels consistent on a short desktop page
+and a long phone one. On the fallback path the wings are driven from the same smoothed
+progress value as the butterfly, via `0.65 + 0.35 * cos(2 * PI * progress * flaps)`.
+
+Verified: with `--bfly-flaps: 10` on desktop, a 41-point scroll sweep produced 19 direction
+reversals (two per beat, as expected) with scaleY spanning 0.31 to 1.0. Held at exactly 1.0
+across 700ms of stillness on the native path. On the fallback it reads 0.966, 0.994, 0.999,
+1.0, 1.0, 1.0 after scrolling stops - the lerp completing its ease-out and parking, not a
+continuing flap.
+
 **`offsetTop` replaced with rect-based measurement.** Giving sections `position: relative`
 for stacking also made them the `offsetParent`, so `.cta-section .btn-primary`'s `offsetTop`
 resolved against its section (~370) rather than `.site` (~1500). The flight ended a few

@@ -315,10 +315,12 @@ footer { border-top: 0.5px solid var(--color-border-tertiary); padding: 28px 40p
 .bfly { offset-rotate: auto; offset-distance: 0%; }
 
 /* Flap lives on a nested group so it composes with the path transform
-   instead of competing for it. Mirrored wing needs its own keyframes
-   because a static scaleY(-1) would be overwritten by the animation. */
-.bfly-wing { transform-box: view-box; transform-origin: 0 0; animation: bfly-flap 700ms ease-in-out infinite; }
-.bfly-wing--m { animation-name: bfly-flap-m; }
+   instead of competing for it. It is driven by the scroll timeline, not by
+   time, so the wings only beat while the page is actually moving.
+   The mirrored wing needs its own keyframes because a static scaleY(-1)
+   would be overwritten by the animation. */
+.bfly-wing { transform-box: view-box; transform-origin: 0 0; }
+.bfly-wing--m { transform: scaleY(-1); }
 @keyframes bfly-flap { 0%, 100% { transform: scaleY(1); } 50% { transform: scaleY(0.3); } }
 @keyframes bfly-flap-m { 0%, 100% { transform: scaleY(-1); } 50% { transform: scaleY(-0.3); } }
 
@@ -335,6 +337,15 @@ footer { border-top: 0.5px solid var(--color-border-tertiary); padding: 28px 40p
     animation-timeline: scroll(root block);
     animation-range: normal calc(100% - var(--bfly-rest, 0px));
   }
+  /* Iterations divide the scroll range, so --bfly-flaps (set from JS against
+     the scroll distance) controls beats per page rather than beats per second. */
+  .bfly-wing {
+    animation: bfly-flap 1ms linear;
+    animation-timeline: scroll(root block);
+    animation-range: normal calc(100% - var(--bfly-rest, 0px));
+    animation-iteration-count: var(--bfly-flaps, 14);
+  }
+  .bfly-wing--m { animation-name: bfly-flap-m; }
 }
 @keyframes bfly-fly { to { offset-distance: 100%; } }
 @keyframes bfly-draw { to { stroke-dashoffset: 0; } }
