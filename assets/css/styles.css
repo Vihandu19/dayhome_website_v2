@@ -95,7 +95,7 @@ footer { border-top: 0.5px solid var(--color-border-tertiary); padding: 28px 40p
 .about-heading { font-size: 24px; font-weight: 500; line-height: 1.3; letter-spacing: -0.4px; margin-bottom: 16px; }
 .about-body { font-size: 15px; color: var(--color-text-secondary); line-height: 1.7; margin-bottom: 24px; }
 .about-link { font-size: 14px; color: #3B6D11; font-weight: 500; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; }
-.about-img-placeholder { background: #D5F0C0; border-radius: 12px; aspect-ratio: 4/3; position: relative; overflow: hidden; border: 0.5px solid #C0DD97; }
+.about-img-placeholder { background: #D5F0C0; border-radius: 12px; aspect-ratio: 4/3; position: relative; z-index: 2; overflow: hidden; border: 0.5px solid #C0DD97; }
 .about-img-placeholder img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center; display: block; }
 
 .info-bar { background: var(--color-background-secondary); border-bottom: 0.5px solid var(--color-border-tertiary); padding: 36px 40px; }
@@ -295,20 +295,32 @@ footer { border-top: 0.5px solid var(--color-border-tertiary); padding: 28px 40p
 
 /* ==========================================================================
    SCROLL BUTTERFLY (HOME PAGE)
-   Overlay sits above .site's background but below section content.
-   NOTE: this relies on .hero, .info-bar and .cta-section being transparent
-   (set below) so the overlay shows through. Those sections were opaque #fff
-   on a #fff .site, so the change is a visual no-op - but it does couple the
-   home layout to .site staying white.
+   Trail sits above all normal page content (headings, cards, tiles, badges)
+   and is only hidden behind the two elements the flight actually interacts
+   with: the caregiver photo and the CTA button it lands on. Those two are
+   individually promoted above it. The butterfly itself always sits above
+   everything, including the trail.
+
+   Deliberately no position/z-index on the sections themselves. Giving a
+   section its own z-index creates a stacking context that traps its
+   descendants below the trail as a group - no z-index set on a child inside
+   it could then out-rank the trail, since z-index can't escape an ancestor's
+   stacking context. Leaving sections as normal, unpositioned content lets
+   the trail (a positioned, z-index element) paint above them by the CSS
+   painting-order rules, and lets the two exempted elements opt back out
+   individually via their own z-index.
    ========================================================================== */
 .site { position: relative; }
-.site > section, .site > nav, .site > footer { position: relative; z-index: 1; }
-.hero, .info-bar, .cta-section { background: transparent; }
 
-/* Trail sits behind the page content; the butterfly sits above it. */
 .bfly-track { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
-.bfly-track--trail { z-index: 0; }
-.bfly-track--fly { z-index: 2; }
+.bfly-track--trail { z-index: 1; }
+.bfly-track--fly { z-index: 3; }
+
+/* The two exemptions. .about-img-placeholder's own z-index is set where it's
+   defined (it already has position: relative for its absolutely-positioned
+   <img>). This one is scoped to .cta-section so the hero's "Learn more"
+   button (same .btn-primary class) is unaffected. */
+.cta-section .btn-primary { position: relative; z-index: 2; }
 .bfly-trail { fill: none; stroke: #97C459; stroke-width: 2; stroke-linecap: round; stroke-dasharray: 2 10; }
 .bfly-facet--dark { fill: #3B6D11; }
 .bfly-facet--light { fill: #97C459; }

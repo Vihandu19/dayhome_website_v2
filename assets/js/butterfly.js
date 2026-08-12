@@ -139,15 +139,16 @@ document.addEventListener('DOMContentLoaded', function() {
     if (!frame) frame = window.requestAnimationFrame(tick);
   }
 
-  // Perch on the button's top edge, a few px into its face, so the body
-  // visually rests on the surface instead of hovering above it. Off-centre
-  // horizontally (not on the button's own greens at #3B6D11) so the glyph
-  // stays readable against the fill.
+  // Perch at the button's top-right corner, a few px into its face so the
+  // body visually rests on the surface instead of hovering above it. Inset
+  // from the true corner by a fraction of the button width, capped in px, so
+  // the wingspan doesn't hang off the edge on a narrow button.
   function landing(width, height) {
     if (!cta) return [width * 0.5, height * 0.9];
     const r = cta.getBoundingClientRect();
     const s = site.getBoundingClientRect();
-    return [r.left - s.left + r.width * 0.72, r.top - s.top + 4];
+    const inset = Math.min(22, r.width * 0.14);
+    return [r.left - s.left + r.width - inset, r.top - s.top + 4];
   }
 
   function layout() {

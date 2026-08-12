@@ -372,6 +372,56 @@ the body visually touches down on the surface. Verified: the rendered glyph's bo
 sits 16-20px past the button's top (feet through the seam, wings above it), at both
 breakpoints, with no zigzag visible in the final approach segment of the path.
 
+**Layering reworked again: trail above everything except the photo and the CTA button
+(requested after review).** The prior design had the trail behind ALL section content,
+occluded by the hero card, photos and info tiles alike. After seeing it, the owner wanted
+the opposite for most of the page: the trail should show over headings, cards, badges and
+tiles, and be hidden only behind the caregiver photo and the button it lands on.
+
+This could not be done by tuning z-index numbers alone. The prior design gave every section
+`position: relative; z-index: 1`, which creates a stacking context - once a section has its
+own z-index, its entire subtree is compared to siblings as a single unit, and no z-index
+set on a descendant (however high) can make that descendant out-rank an element outside the
+section. "Trail above this section's text but below one button inside the same section" is
+not expressible while the section itself holds a z-index.
+
+The fix removes z-index/position from `.site > section, .site > nav, .site > footer`
+entirely. Nav keeps its own pre-existing `position: relative; z-index: 10` from its base
+rule (previously silently overridden to z-index 1 by the removed blanket rule - restoring
+it is a side effect of deleting that rule, not a deliberate change, and is harmless since
+the flight path starts below nav's vertical extent regardless). Plain sections, with no
+z-index of their own, paint as ordinary static content, which the CSS stacking spec places
+below any element with a set z-index regardless of DOM order. The trail (`z-index: 1`) then
+paints above all of that content automatically. `.about-img-placeholder` (already
+`position: relative` for its absolutely-positioned `<img>`) and `.cta-section .btn-primary`
+(newly `position: relative`) are individually promoted to `z-index: 2` to opt back out. The
+butterfly overlay stays highest at `z-index: 3`.
+
+The `.hero, .info-bar, .cta-section { background: transparent }` rule from the original
+design is removed - it was already vestigial for the trail's visibility purpose is achieved
+through CSS painting order now, not through section transparency, so this rule no longer
+does anything the page's visual output depends on.
+
+Verified in Chromium: screenshotted the descent at five scroll fractions and confirmed
+trail dots draw directly over the "Agency licensed" / "First Aid & CPR certified" rows
+inside the opaque mint hero card. Walked the generated path with `getTotalLength` /
+`getPointAtLength` and confirmed it geometrically crosses the caregiver photo's rect at
+both breakpoints (6 of 401 samples desktop, 42 of 401 mobile), then screenshotted that
+region and confirmed no dots are visible there - the photo occludes it as intended.
+Confirmed computed z-index values (trail 1, image 2, cta button 2, fly 3, hero's unrelated
+"Learn more" button still `auto` - the promotion is scoped to `.cta-section .btn-primary`
+only). Re-ran the About/Gallery/Contact and reduced-motion checks since this touched
+shared, page-wide CSS rules (the removed section rule, not just butterfly-specific
+selectors) - all three pages render unchanged with no console errors, and reduced motion
+still hides both overlays entirely.
+
+**Landing moved to the top-right corner (requested after review).** `landing()`'s x
+fraction changed from a fixed 72%-across-the-button-width to `button width - inset`, where
+`inset = min(22, button width * 0.14)` - close enough to the true corner to read as a
+corner landing while leaving enough margin that the wingspan doesn't hang off the button's
+edge. Verified the glyph's horizontal centre sits 21px from the button's right edge at both
+breakpoints.
+
 **`offsetTop` replaced with rect-based measurement.** Giving sections `position: relative`
 for stacking also made them the `offsetParent`, so `.cta-section .btn-primary`'s `offsetTop`
 resolved against its section (~370) rather than `.site` (~1500). The flight ended a few
