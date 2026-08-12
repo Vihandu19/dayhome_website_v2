@@ -293,7 +293,57 @@ footer { border-top: 0.5px solid var(--color-border-tertiary); padding: 28px 40p
 .success-heading { font-size: 22px; font-weight: 500; letter-spacing: -0.4px; color: var(--color-text-primary); margin-bottom: 10px; }
 .success-sub { font-size: 15px; color: var(--color-text-secondary); line-height: 1.7; max-width: 400px; margin: 0 auto; }
 
+/* ==========================================================================
+   SCROLL BUTTERFLY (HOME PAGE)
+   Overlay sits above .site's background but below section content.
+   NOTE: this relies on .hero, .info-bar and .cta-section being transparent
+   (set below) so the overlay shows through. Those sections were opaque #fff
+   on a #fff .site, so the change is a visual no-op - but it does couple the
+   home layout to .site staying white.
+   ========================================================================== */
+.site { position: relative; }
+.site > section, .site > nav, .site > footer { position: relative; z-index: 1; }
+.hero, .info-bar, .cta-section { background: transparent; }
+
+.bfly-track { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
+.bfly-trail { fill: none; stroke: #97C459; stroke-width: 2; stroke-linecap: round; stroke-dasharray: 2 10; }
+.bfly-facet--dark { fill: #3B6D11; }
+.bfly-facet--light { fill: #97C459; }
+.bfly-body { fill: #27500A; }
+.bfly-antennae { fill: none; stroke: #27500A; stroke-width: 0.8; stroke-linecap: round; }
+
+.bfly { offset-rotate: auto; offset-distance: 0%; }
+
+/* Flap lives on a nested group so it composes with the path transform
+   instead of competing for it. Mirrored wing needs its own keyframes
+   because a static scaleY(-1) would be overwritten by the animation. */
+.bfly-wing { transform-box: view-box; transform-origin: 0 0; animation: bfly-flap 700ms ease-in-out infinite; }
+.bfly-wing--m { animation-name: bfly-flap-m; }
+@keyframes bfly-flap { 0%, 100% { transform: scaleY(1); } 50% { transform: scaleY(0.3); } }
+@keyframes bfly-flap-m { 0%, 100% { transform: scaleY(-1); } 50% { transform: scaleY(-0.3); } }
+
+/* Duration is nominal - the scroll timeline supplies progress. Firefox
+   requires a non-zero animation-duration for scroll-driven animations. */
+@supports (animation-timeline: scroll()) {
+  .bfly {
+    animation: bfly-fly 1ms linear both;
+    animation-timeline: scroll(root block);
+    animation-range: normal calc(100% - var(--bfly-rest, 0px));
+  }
+  .bfly-trail-mask {
+    animation: bfly-draw 1ms linear both;
+    animation-timeline: scroll(root block);
+    animation-range: normal calc(100% - var(--bfly-rest, 0px));
+  }
+}
+@keyframes bfly-fly { to { offset-distance: 100%; } }
+@keyframes bfly-draw { to { stroke-dashoffset: 0; } }
+
+@media print { .bfly-track { display: none; } }
+
 @media (prefers-reduced-motion: reduce) {
+  .bfly-track { display: none; }
+
   .btn-primary,
   .btn-ghost,
   nav,
@@ -333,6 +383,8 @@ footer { border-top: 0.5px solid var(--color-border-tertiary); padding: 28px 40p
   .page-header { padding: 36px 20px 32px; }
   .page-headline { font-size: 26px; }
   
+  .bfly-scale { transform-box: view-box; transform-origin: 0 0; transform: scale(0.85); }
+
   .hero { grid-template-columns: 1fr; padding: 48px 20px; }
   .about-section { grid-template-columns: 1fr; padding: 48px 20px; }
   .info-bar-inner { grid-template-columns: 1fr; }

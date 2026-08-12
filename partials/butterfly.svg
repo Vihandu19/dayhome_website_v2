@@ -1,0 +1,33 @@
+<svg class="bfly-track" aria-hidden="true" focusable="false" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <mask id="bfly-reveal" maskUnits="userSpaceOnUse">
+      <path class="bfly-trail-mask" d="" fill="none" stroke="#ffffff" stroke-width="10" pathLength="100" stroke-dasharray="100" stroke-dashoffset="100" />
+    </mask>
+  </defs>
+
+  <path class="bfly-trail" d="" mask="url(#bfly-reveal)" />
+
+  <!-- Authored facing +X so offset-rotate:auto turns it into the direction of
+       travel. Wings attach along the body, not at a single origin point.
+       Each wing is a quad split on its diagonal into a lit and a folded facet. -->
+  <g class="bfly">
+    <g class="bfly-scale">
+      <g class="bfly-wings">
+        <g class="bfly-wing">
+          <polygon class="bfly-facet--dark" points="5,0 8,-13 -3,-9" />
+          <polygon class="bfly-facet--light" points="5,0 -3,-9 -1,0" />
+          <polygon class="bfly-facet--light" points="-1,0 -4,-9 -9,-4" />
+          <polygon class="bfly-facet--dark" points="-1,0 -9,-4 -9,0" />
+        </g>
+        <g class="bfly-wing bfly-wing--m">
+          <polygon class="bfly-facet--dark" points="5,0 8,-13 -3,-9" />
+          <polygon class="bfly-facet--light" points="5,0 -3,-9 -1,0" />
+          <polygon class="bfly-facet--light" points="-1,0 -4,-9 -9,-4" />
+          <polygon class="bfly-facet--dark" points="-1,0 -9,-4 -9,0" />
+        </g>
+      </g>
+      <path class="bfly-body" d="M9 0 L1 -1.6 L-9 0 L1 1.6 Z" />
+      <path class="bfly-antennae" d="M8 0 L14 -4.5 M8 0 L14 4.5" />
+    </g>
+  </g>
+</svg>

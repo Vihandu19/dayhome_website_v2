@@ -106,6 +106,20 @@ This project uses a minimal, accessibility-conscious 60-30-10 color system to ma
 
 All micro-interactions respect `prefers-reduced-motion: reduce` - transitions are disabled and transforms are neutralized.
 
+### Scroll Butterfly (Home page)
+
+A stylized origami butterfly flies down the Home page as the visitor scrolls, leaving a dotted trail that draws in behind it. Home page only. Design spec: `docs/superpowers/specs/2026-08-11-scroll-butterfly-design.md`.
+
+* **Files**: `partials/butterfly.svg` (glyph + trail), `assets/js/butterfly.js` (path generation + fallback), plus a `SCROLL BUTTERFLY` section in `styles.css`.
+* **Scroll binding**: CSS `animation-timeline: scroll(root block)` drives `offset-distance` on the butterfly and `stroke-dashoffset` on the trail mask. Browsers without scroll-driven animation fall back to a rAF loop in `butterfly.js` that lerps toward scroll progress and writes the same two properties.
+* **Wing flap**: a separate CSS keyframe loop on a nested `<g>`, so it composes with the path transform rather than competing for it. Flaps regardless of scroll speed.
+* **Coordinate space**: the overlay's `viewBox` is set at runtime to `0 0 <site width> <site height>`, making one user unit one CSS pixel so `offset-path` and the drawn trail agree at every viewport width. The path `d` is generated in JS from anchors held as fractions.
+* **Reduced motion**: hidden entirely. The JS returns before generating anything, so no path, no listeners, no observer.
+
+**Coupling to watch**: the overlay sits behind section content, so `.hero`, `.info-bar` and `.cta-section` are set to `background: transparent` to let it show through. Those sections were opaque `#ffffff` on a `#ffffff` `.site`, so this is a visual no-op today - but it couples the Home layout to `.site` staying white. If those surface tokens are ever retinted, those sections will go see-through. `.cta-section` is shared with the About page, where it is also a no-op.
+
+**Measurement note**: sections are `position: relative` for stacking, which makes `offsetTop` resolve against the section rather than `.site`. `butterfly.js` measures with `getBoundingClientRect` relative to `.site` for this reason - do not switch it back to `offsetTop`.
+
 ### Typography (Phase 2)
 
 * **Font Stack**: `--font-serif: Georgia, "Times New Roman", Times, serif` - intentional serif aesthetic with high-DPI rendering priority (Georgia first, Times New Roman as primary fallback per design intent).
@@ -763,6 +777,7 @@ dayhome-website-v2/
 │   ├── js/
 │   │   ├── main.js
 │   │   ├── animations.js
+│   │   ├── butterfly.js             <-- Scroll butterfly (home page only)
 │   │   └── contact-form.js
 │   ├── fonts/
 │   │   └── tabler-icons.woff2
@@ -792,6 +807,7 @@ dayhome-website-v2/
 ├── partials/                       <-- Shared HTML components (source of truth)
 │   ├── nav.html
 │   ├── footer.html
+│   ├── butterfly.svg               <-- Scroll butterfly glyph + trail
 │   └── privacy-modal.html
 |
 ├── templates/                      <-- Page templates with placeholders

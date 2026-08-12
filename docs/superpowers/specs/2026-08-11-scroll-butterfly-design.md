@@ -2,7 +2,7 @@
 
 Date: 2026-08-11
 Branch: `feature/scroll-butterfly`
-Status: Approved, not yet implemented
+Status: Implemented and verified. See "As built" at the end for deviations.
 
 ## Summary
 
@@ -269,3 +269,74 @@ the scripted parts.
 
 The measurement most likely to send this back to the drawing board is the mask on mobile.
 Everything else is fairly predictable.
+
+## As built
+
+Implemented 2026-08-11. Deviations from the design above, and why.
+
+### The mask survived
+
+Measured at 375x812 with CPU throttled 4x, over a 120-frame scripted scroll:
+
+| | median | p95 | worst | frames > 16.7ms | frames > 32ms |
+|---|---|---|---|---|---|
+| Overlay active | 16.7ms | 17.7ms | 17.9ms | 54 / 120 | 0 |
+| Overlay hidden | 16.6ms | 17.6ms | 17.8ms | 50 / 120 | 0 |
+
+The difference is within noise and nothing dropped a frame. The documented retreat
+(plain revealed line, static dots) was **not** taken.
+
+Caveat on this number: it is throttled desktop Chromium, a proxy for a mid-range phone,
+not a real low-end device. If the effect is ever reported as janky on cheap Android
+hardware, the retreat is still the first thing to try.
+
+### Deviations
+
+**Anchor counts raised from 7/4 to 9/6.** Seven anchors across 1.25 sine cycles undersampled
+the wave, and the bezier smoothing flattened the result into a near-straight diagonal. The
+meander was not legible as a meander. Now 9 anchors over 1 cycle on desktop, 6 over 0.75 on
+narrow. The perf cost is negligible - the mask dominates, not the segment count.
+
+**Narrow screens ride the right edge rather than the centre.** Centred at 375px put the trail
+straight down the middle of the body copy. Text stayed legible, since it paints on top, but
+"visible in the whitespace" was not honoured. Narrow now centres at `0.76 * W` with amplitude
+`0.14 * W`, following the ragged right edge of the text. Desktop is unchanged.
+
+**Glyph redesigned.** The first version had all four wing triangles radiating from a single
+point at the body origin, with a body 19 units long against 12-unit wings. It read as a leaf
+or a four-bladed pinwheel. Wings now attach along the body as forewing and hindwing quads,
+each split on its diagonal into a lit and a folded facet.
+
+**Wing flap floor raised from 0.18 to 0.3.** At 26px, closing to 18% made the butterfly
+vanish into a sliver for much of each cycle.
+
+**`offsetTop` replaced with rect-based measurement.** Giving sections `position: relative`
+for stacking also made them the `offsetParent`, so `.cta-section .btn-primary`'s `offsetTop`
+resolved against its section (~370) rather than `.site` (~1500). The flight ended a few
+hundred pixels down the page and the rest had no path at all. Now measured with
+`getBoundingClientRect` relative to `.site`. Do not switch this back.
+
+**Startup retry added.** `.site` can measure zero width on the first frame after
+`DOMContentLoaded`, and the original code latched `display: none` on that reading. `layout()`
+now reports success and is retried across up to 10 frames, with a `load` handler as well
+(images settling changes `.site`'s height, so the path needs regenerating regardless).
+
+### Verification performed
+
+Real Chromium via Playwright, against the built `dist/`:
+
+- Desktop 1280x720 and mobile 375x812, screenshotted at 0/35/70/100% and 0/50/100% scroll.
+  Butterfly tracks the path, trail draws in behind it, and it is correctly occluded by the
+  hero card, the photos and the info tiles.
+- Path complexity does drop on narrow: `d` is 286 chars desktop against 198 mobile.
+- viewBox is 1:1 at both (`0 0 898 1769` and `0 0 373 2767`); `--bfly-rest` resolves to 134px
+  and 228px respectively.
+- Forced fallback (with `CSS.supports` stubbed false and the CSS animation silenced): a jump
+  to the page bottom eased 0 to 81% across 14 frames, monotonically, with no teleport.
+- Reduced motion: `display: none`, no viewBox, no path generated, no CSS variable set.
+- About, Gallery and Contact carry no overlay and no script, and throw no errors. About's
+  shared `.cta-section` is transparent over a white `.site`, confirmed a visual no-op.
+
+Note that the in-app preview pane repeatedly painted stale frames during this work, showing
+phantom layout breakage that the DOM measurements contradicted. Playwright was the reliable
+signal. Prefer it for verifying this component.

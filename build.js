@@ -72,7 +72,8 @@ function buildPage(page) {
     .replace('{{SMALL_PLANT}}', partials.SMALL_PLANT || '')
     .replace('{{MEDIUM_PLANT}}', partials.MEDIUM_PLANT || '')
     .replace('{{LARGE_PLANT}}', partials.LARGE_PLANT || '')
-    .replace('{{XLARGE_PLANT}}', partials.XLARGE_PLANT || '');
+    .replace('{{XLARGE_PLANT}}', partials.XLARGE_PLANT || '')
+    .replace('{{BUTTERFLY}}', partials.BUTTERFLY || '');
 
   const outputDir = path.dirname(path.join(DIST, page.output));
   if (!fs.existsSync(outputDir)) {
