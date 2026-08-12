@@ -1,12 +1,15 @@
-<svg class="bfly-track" aria-hidden="true" focusable="false" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+<svg class="bfly-track bfly-track--trail" aria-hidden="true" focusable="false" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <mask id="bfly-reveal" maskUnits="userSpaceOnUse">
       <path class="bfly-trail-mask" d="" fill="none" stroke="#ffffff" stroke-width="10" pathLength="100" stroke-dasharray="100" stroke-dashoffset="100" />
     </mask>
   </defs>
-
   <path class="bfly-trail" d="" mask="url(#bfly-reveal)" />
+</svg>
 
+<!-- Separate SVG so the butterfly can sit above the page content while the
+     trail stays behind it. Both share one viewBox, set 1:1 with CSS pixels. -->
+<svg class="bfly-track bfly-track--fly" aria-hidden="true" focusable="false" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
   <!-- Authored facing +X so offset-rotate:auto turns it into the direction of
        travel. Wings attach along the body, not at a single origin point.
        Each wing is a quad split on its diagonal into a lit and a folded facet. -->

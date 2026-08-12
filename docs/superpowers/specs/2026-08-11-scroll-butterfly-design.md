@@ -328,6 +328,32 @@ across 700ms of stillness on the native path. On the fallback it reads 0.966, 0.
 1.0, 1.0, 1.0 after scrolling stops - the lerp completing its ease-out and parking, not a
 continuing flap.
 
+**Layering split: trail behind content, butterfly above it (requested after review).** The
+original design put both the trail and the butterfly on one overlay, occluded together by
+section content. After seeing it, the owner wanted the opposite for the butterfly: always on
+top, only the dotted line hidden behind cards and photos.
+
+This is now two SVG overlays sharing one viewBox - `.bfly-track--trail` at z-index 0 (below
+the `position: relative; z-index: 1` sections) and `.bfly-track--fly` at z-index 2 (above
+them). `butterfly.js` was updated to reference both; nothing else about path generation
+changed. Verified by forcing the butterfly's `offset-distance` to a position over the opaque
+caregiver photo and screenshotting: the glyph paints cleanly on top of the photo and its
+planter.
+
+**Landing on the CTA button (requested after review).** The flight previously ended near the
+button without actually arriving on it. The path's last two anchors now bring it in on a
+shallow approach - the wave stops 90px short of the landing point, followed by an approach
+point and the landing point itself - so `offset-rotate: auto` doesn't point the glyph
+nose-down into the button on arrival. It perches on the button's *top edge*, not its face:
+the wing facets are `#3B6D11`, the same colour as the button's own fill, so resting on top of
+it would make the butterfly disappear into it. Landing position is computed from the
+button's live `getBoundingClientRect()` in `.site` coordinates, not from `topWithinSite`
+alone, since it also needs the horizontal position.
+
+Verified across both breakpoints: butterfly's horizontal centre falls within the button's
+left/right bounds, and its bottom edge sits within 14px of the button's top, at full scroll
+on both 1280x720 and 375x812.
+
 **`offsetTop` replaced with rect-based measurement.** Giving sections `position: relative`
 for stacking also made them the `offsetParent`, so `.cta-section .btn-primary`'s `offsetTop`
 resolved against its section (~370) rather than `.site` (~1500). The flight ended a few

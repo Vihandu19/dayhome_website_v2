@@ -305,7 +305,10 @@ footer { border-top: 0.5px solid var(--color-border-tertiary); padding: 28px 40p
 .site > section, .site > nav, .site > footer { position: relative; z-index: 1; }
 .hero, .info-bar, .cta-section { background: transparent; }
 
-.bfly-track { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
+/* Trail sits behind the page content; the butterfly sits above it. */
+.bfly-track { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.bfly-track--trail { z-index: 0; }
+.bfly-track--fly { z-index: 2; }
 .bfly-trail { fill: none; stroke: #97C459; stroke-width: 2; stroke-linecap: round; stroke-dasharray: 2 10; }
 .bfly-facet--dark { fill: #3B6D11; }
 .bfly-facet--light { fill: #97C459; }

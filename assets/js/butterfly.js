@@ -11,18 +11,19 @@ document.addEventListener('DOMContentLoaded', function() {
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
   const site = document.querySelector('.site');
-  const svg = document.querySelector('.bfly-track');
-  if (!site || !svg) return;
+  const trailSvg = document.querySelector('.bfly-track--trail');
+  const flySvg = document.querySelector('.bfly-track--fly');
+  if (!site || !trailSvg || !flySvg) return;
 
-  const trail = svg.querySelector('.bfly-trail');
-  const mask = svg.querySelector('.bfly-trail-mask');
-  const bfly = svg.querySelector('.bfly');
+  const trail = trailSvg.querySelector('.bfly-trail');
+  const mask = trailSvg.querySelector('.bfly-trail-mask');
+  const bfly = flySvg.querySelector('.bfly');
   if (!trail || !mask || !bfly) return;
 
   const nav = site.querySelector('nav');
   const footer = site.querySelector('footer');
   const cta = site.querySelector('.cta-section .btn-primary');
-  const wings = svg.querySelectorAll('.bfly-wing');
+  const wings = flySvg.querySelectorAll('.bfly-wing');
 
   const native = window.CSS && CSS.supports('animation-timeline', 'scroll()');
 
@@ -39,7 +40,7 @@ document.addEventListener('DOMContentLoaded', function() {
   // any width. Swing is clamped so it stays inside .site and never overflows.
   // Anchor count is set against the wave so it stays well sampled - too few
   // points per half-cycle and the bezier smoothing flattens the meander out.
-  function anchors(width, startY, endY) {
+  function anchors(width, startY, land) {
     const narrow = width <= 640;
     const count = narrow ? 6 : 9;
     const turns = narrow ? 1.5 : 2;
@@ -49,10 +50,20 @@ document.addEventListener('DOMContentLoaded', function() {
     const mid = narrow ? width * 0.76 : width * 0.5;
     const points = [];
 
-    for (let i = 0; i < count; i++) {
-      const t = i / (count - 1);
-      points.push([mid + Math.sin(t * Math.PI * turns) * amp, startY + (endY - startY) * t]);
+    // The wave stops short of the button so the last leg can flatten out.
+    // Coming in steep would leave offset-rotate pointing the butterfly
+    // nose-down into the button, which reads as a dive, not a landing.
+    const waveEnd = land[1] - 90;
+    const wave = count - 2;
+
+    for (let i = 0; i < wave; i++) {
+      const t = i / (wave - 1);
+      points.push([mid + Math.sin(t * Math.PI * turns) * amp, startY + (waveEnd - startY) * t]);
     }
+
+    const approach = Math.min(70, width * 0.2);
+    points.push([Math.max(8, Math.min(width - 8, land[0] - approach)), land[1] - 10]);
+    points.push(land);
 
     return points;
   }
@@ -126,21 +137,33 @@ document.addEventListener('DOMContentLoaded', function() {
     if (!frame) frame = window.requestAnimationFrame(tick);
   }
 
+  // Perch on the button's top edge rather than its face: the glyph greens are
+  // the same as the button's #3B6D11 fill, so landing on it would hide it.
+  function landing(width, height) {
+    if (!cta) return [width * 0.5, height * 0.9];
+    const r = cta.getBoundingClientRect();
+    const s = site.getBoundingClientRect();
+    return [r.left - s.left + r.width * 0.72, r.top - s.top - 12];
+  }
+
   function layout() {
     const width = site.clientWidth;
     const height = site.scrollHeight;
     const startY = (nav ? topWithinSite(nav) + nav.offsetHeight : 0) + 40;
-    const endY = cta ? topWithinSite(cta) + cta.offsetHeight / 2 : height * 0.9;
+    const land = landing(width, height);
 
-    if (width <= 0 || endY - startY < 100) {
-      svg.style.display = 'none';
+    if (width <= 0 || land[1] - startY < 150) {
+      trailSvg.style.display = 'none';
+      flySvg.style.display = 'none';
       return false;
     }
 
-    svg.style.display = '';
-    svg.setAttribute('viewBox', '0 0 ' + width + ' ' + height);
+    trailSvg.style.display = '';
+    flySvg.style.display = '';
+    trailSvg.setAttribute('viewBox', '0 0 ' + width + ' ' + height);
+    flySvg.setAttribute('viewBox', '0 0 ' + width + ' ' + height);
 
-    const d = toPath(anchors(width, startY, endY));
+    const d = toPath(anchors(width, startY, land));
     trail.setAttribute('d', d);
     mask.setAttribute('d', d);
     bfly.style.offsetPath = 'path("' + d + '")';
