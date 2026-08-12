@@ -70,8 +70,6 @@ footer { border-top: 0.5px solid var(--color-border-tertiary); padding: 28px 40p
 .btn-primary:active { transform: scale(0.98); }
 .btn-ghost { font-size: 14px; color: var(--color-text-secondary); text-decoration: none; padding: 13px 0; display: inline-block; transition: color var(--motion-smooth), transform var(--motion-smooth); }
 .btn-ghost:hover { color: #3B6D11; transform: translateX(2px); }
-.fade-in-section { opacity: 0; transform: translateY(20px); transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1), transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
-.fade-in-section.is-visible { opacity: 1; transform: none; }
 
 /* ==========================================================================
    3. HOME PAGE SPECIFIC
@@ -307,8 +305,7 @@ footer { border-top: 0.5px solid var(--color-border-tertiary); padding: 28px 40p
   .day-item,
   .tile-photo i,
   .story-img i,
-  .modal-overlay,
-  .fade-in-section {
+  .modal-overlay {
     transition: none;
   }
 
@@ -316,11 +313,6 @@ footer { border-top: 0.5px solid var(--color-border-tertiary); padding: 28px 40p
   .nav-cta:active,
   .ig-btn:active,
   .btn-submit:not(:disabled):active {
-    transform: none;
-  }
-
-  .fade-in-section {
-    opacity: 1;
     transform: none;
   }
 }

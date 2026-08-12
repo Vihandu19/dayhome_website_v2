@@ -20,30 +20,4 @@ document.addEventListener('DOMContentLoaded', function() {
       window.requestAnimationFrame(updateNavState);
     }, { passive: true });
   }
-
-  const sections = document.querySelectorAll('.fade-in-section');
-
-  if (!sections.length) return;
-
-  if (!('IntersectionObserver' in window)) {
-    sections.forEach(function(section) {
-      section.classList.add('is-visible');
-    });
-    return;
-  }
-
-  const observer = new IntersectionObserver(function(entries) {
-    entries.forEach(function(entry) {
-      if (!entry.isIntersecting) return;
-
-      entry.target.classList.add('is-visible');
-      observer.unobserve(entry.target);
-    });
-  }, {
-    threshold: 0.15
-  });
-
-  sections.forEach(function(section) {
-    observer.observe(section);
-  });
 });
